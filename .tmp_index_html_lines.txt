@@ -1,0 +1,301 @@
+   1: <!DOCTYPE html>
+   2: <html lang="en">
+   3: <head>
+   4:   <meta charset="UTF-8" />
+   5:   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+   6:   <title>Robot Control</title>
+   7:   <style>
+   8:     :root {
+   9:       --bg-a: #0f172a;
+  10:       --bg-b: #1d4e89;
+  11:       --panel: #ffffff;
+  12:       --ink: #0b1f33;
+  13:       --btn: #0ea5e9;
+  14:       --btn-active: #0369a1;
+  15:       --btn-stop: #ef4444;
+  16:       --btn-stop-active: #b91c1c;
+  17:     }
+  18: 
+  19:     * {
+  20:       box-sizing: border-box;
+  21:       -webkit-tap-highlight-color: transparent;
+  22:       font-family: "Segoe UI", "Trebuchet MS", sans-serif;
+  23:     }
+  24: 
+  25:     body {
+  26:       margin: 0;
+  27:       min-height: 100vh;
+  28:       display: grid;
+  29:       place-items: center;
+  30:       background: radial-gradient(circle at 20% 20%, #3b82f6 0%, var(--bg-b) 35%, var(--bg-a) 100%);
+  31:       color: var(--ink);
+  32:       padding: 16px;
+  33:     }
+  34: 
+  35:     .card {
+  36:       width: min(480px, 100%);
+  37:       background: var(--panel);
+  38:       border-radius: 20px;
+  39:       box-shadow: 0 16px 40px rgba(2, 6, 23, 0.35);
+  40:       padding: 18px;
+  41:     }
+  42: 
+  43:     h1 {
+  44:       margin: 0 0 6px;
+  45:       font-size: 1.4rem;
+  46:       text-align: center;
+  47:     }
+  48: 
+  49:     .hint {
+  50:       margin: 0 0 14px;
+  51:       text-align: center;
+  52:       color: #334155;
+  53:       font-size: 0.95rem;
+  54:     }
+  55: 
+  56:     .cams {
+  57:       display: grid;
+  58:       grid-template-columns: 1fr;
+  59:       gap: 10px;
+  60:       margin-bottom: 14px;
+  61:     }
+  62: 
+  63:     .cam-card {
+  64:       background: #0b1f33;
+  65:       border-radius: 14px;
+  66:       padding: 8px;
+  67:       color: #cbd5e1;
+  68:     }
+  69: 
+  70:     .cam-head {
+  71:       display: flex;
+  72:       justify-content: space-between;
+  73:       align-items: center;
+  74:       font-size: 0.8rem;
+  75:       font-weight: 700;
+  76:       margin: 0 3px 6px;
+  77:       letter-spacing: 0.03em;
+  78:     }
+  79: 
+  80:     .cam-state {
+  81:       font-size: 0.75rem;
+  82:       opacity: 0.9;
+  83:       text-transform: uppercase;
+  84:     }
+  85: 
+  86:     .cam-card img {
+  87:       width: 100%;
+  88:       aspect-ratio: 4 / 3;
+  89:       object-fit: cover;
+  90:       border-radius: 10px;
+  91:       background: #020617;
+  92:       display: block;
+  93:     }
+  94: 
+  95:     .pad {
+  96:       display: grid;
+  97:       grid-template-columns: repeat(3, 1fr);
+  98:       grid-template-areas:
+  99:         ". up ."
+ 100:         "left stop right"
+ 101:         ". down .";
+ 102:       gap: 12px;
+ 103:       margin-bottom: 16px;
+ 104:     }
+ 105: 
+ 106:     button {
+ 107:       border: none;
+ 108:       border-radius: 16px;
+ 109:       min-height: 82px;
+ 110:       font-size: 1.05rem;
+ 111:       font-weight: 700;
+ 112:       color: #fff;
+ 113:       background: var(--btn);
+ 114:       box-shadow: 0 8px 18px rgba(14, 165, 233, 0.35);
+ 115:       transition: transform 0.08s ease, background 0.08s ease;
+ 116:       touch-action: manipulation;
+ 117:       user-select: none;
+ 118:     }
+ 119: 
+ 120:     button:active,
+ 121:     button.active {
+ 122:       transform: scale(0.97);
+ 123:       background: var(--btn-active);
+ 124:     }
+ 125: 
+ 126:     #up { grid-area: up; }
+ 127:     #left { grid-area: left; }
+ 128:     #right { grid-area: right; }
+ 129:     #down { grid-area: down; }
+ 130:     #stop {
+ 131:       grid-area: stop;
+ 132:       background: var(--btn-stop);
+ 133:       box-shadow: 0 8px 18px rgba(239, 68, 68, 0.35);
+ 134:     }
+ 135: 
+ 136:     #stop:active,
+ 137:     #stop.active {
+ 138:       background: var(--btn-stop-active);
+ 139:     }
+ 140: 
+ 141:     .speed-box {
+ 142:       background: #f1f5f9;
+ 143:       border-radius: 14px;
+ 144:       padding: 12px;
+ 145:     }
+ 146: 
+ 147:     .speed-row {
+ 148:       display: flex;
+ 149:       justify-content: space-between;
+ 150:       align-items: center;
+ 151:       margin-bottom: 8px;
+ 152:       font-weight: 700;
+ 153:     }
+ 154: 
+ 155:     input[type="range"] {
+ 156:       width: 100%;
+ 157:       accent-color: #0284c7;
+ 158:     }
+ 159: 
+ 160:     .footer {
+ 161:       margin-top: 12px;
+ 162:       text-align: center;
+ 163:       color: #64748b;
+ 164:       font-size: 0.85rem;
+ 165:     }
+ 166: 
+ 167:     @media (min-width: 760px) {
+ 168:       .card {
+ 169:         width: min(860px, 100%);
+ 170:       }
+ 171: 
+ 172:       .cams {
+ 173:         grid-template-columns: 1fr 1fr;
+ 174:       }
+ 175:     }
+ 176:   </style>
+ 177: </head>
+ 178: <body>
+ 179:   <main class="card">
+ 180:     <h1>Robot Control</h1>
+ 181:     <section class="cams">
+ 182:       <article class="cam-card">
+ 183:         <div class="cam-head">
+ 184:           <span>CAM 1</span>
+ 185:           <span class="cam-state">live</span>
+ 186:         </div>
+ 187:         <img src="http://192.168.4.20/stream" alt="Camera 1 stream" />
+ 188:       </article>
+ 189:       <article class="cam-card">
+ 190:         <div class="cam-head">
+ 191:           <span>CAM 2</span>
+ 192:           <span class="cam-state">live</span>
+ 193:         </div>
+ 194:         <img src="http://192.168.4.21/stream" alt="Camera 2 stream" />
+ 195:       </article>
+ 196:     </section>
+ 197:     <p class="hint">Hold a direction button to move. Release to stop.</p>
+ 198: 
+ 199:     <section class="pad">
+ 200:       <button id="up">FORWARD</button>
+ 201:       <button id="left">LEFT</button>
+ 202:       <button id="stop">STOP</button>
+ 203:       <button id="right">RIGHT</button>
+ 204:       <button id="down">BACK</button>
+ 205:     </section>
+ 206: 
+ 207:     <section class="speed-box">
+ 208:       <div class="speed-row">
+ 209:         <span>Speed</span>
+ 210:         <span><strong id="speedValue">180</strong> / 255</span>
+ 211:       </div>
+ 212:       <input id="speed" type="range" min="0" max="255" value="180" />
+ 213:     </section>
+ 214: 
+ 215:     <p class="footer">AP: Robot-Control (192.168.4.1) | Cam1: 192.168.4.20 | Cam2: 192.168.4.21 | Build: R2026-03-28-1</p>
+ 216:   </main>
+ 217: 
+ 218:   <script>
+ 219:     var speedSlider = document.getElementById("speed");
+ 220:     var speedValue = document.getElementById("speedValue");
+ 221:     var holdButtons = [
+ 222:       { id: "up", dir: "forward" },
+ 223:       { id: "down", dir: "backward" },
+ 224:       { id: "left", dir: "left" },
+ 225:       { id: "right", dir: "right" }
+ 226:     ];
+ 227:     var stopButton = document.getElementById("stop");
+ 228:     var activeDirection = "stop";
+ 229: 
+ 230:     function send(path) {
+ 231:       fetch(path, { cache: "no-store" }).catch(function () {});
+ 232:     }
+ 233: 
+ 234:     function startMove(dir, button) {
+ 235:       if (activeDirection === dir) return;
+ 236:       activeDirection = dir;
+ 237:       button.classList.add("active");
+ 238:       send("/move?dir=" + dir);
+ 239:     }
+ 240: 
+ 241:     function clearPadButtons() {
+ 242:       var padButtons = document.querySelectorAll(".pad button");
+ 243:       for (var i = 0; i < padButtons.length; i++) {
+ 244:         padButtons[i].classList.remove("active");
+ 245:       }
+ 246:     }
+ 247: 
+ 248:     function stopMove(button) {
+ 249:       if (button) {
+ 250:         button.classList.remove("active");
+ 251:       }
+ 252:       if (activeDirection === "stop") return;
+ 253:       activeDirection = "stop";
+ 254:       clearPadButtons();
+ 255:       send("/move?dir=stop");
+ 256:     }
+ 257: 
+ 258:     function bindHold(button, dir) {
+ 259:       button.addEventListener("pointerdown", function (e) {
+ 260:         e.preventDefault();
+ 261:         startMove(dir, button);
+ 262:       });
+ 263: 
+ 264:       var releaseEvents = ["pointerup", "pointercancel", "pointerleave"];
+ 265:       for (var i = 0; i < releaseEvents.length; i++) {
+ 266:         (function (eventName) {
+ 267:           button.addEventListener(eventName, function (e) {
+ 268:             e.preventDefault();
+ 269:             stopMove(button);
+ 270:           });
+ 271:         })(releaseEvents[i]);
+ 272:       }
+ 273:     }
+ 274: 
+ 275:     for (var j = 0; j < holdButtons.length; j++) {
+ 276:       var button = document.getElementById(holdButtons[j].id);
+ 277:       bindHold(button, holdButtons[j].dir);
+ 278:     }
+ 279: 
+ 280:     stopButton.addEventListener("click", function () {
+ 281:       stopMove(stopButton);
+ 282:     });
+ 283: 
+ 284:     speedSlider.addEventListener("input", function () {
+ 285:       var value = speedSlider.value;
+ 286:       speedValue.textContent = value;
+ 287:       send("/speed?value=" + value);
+ 288:     });
+ 289: 
+ 290:     document.addEventListener("visibilitychange", function () {
+ 291:       if (document.hidden) {
+ 292:         stopMove();
+ 293:       }
+ 294:     });
+ 295: 
+ 296:     window.addEventListener("beforeunload", function () {
+ 297:       stopMove();
+ 298:     });
+ 299:   </script>
+ 300: </body>
+ 301: </html>

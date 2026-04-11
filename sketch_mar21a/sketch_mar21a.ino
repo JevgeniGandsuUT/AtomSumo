@@ -41,10 +41,10 @@ const uint8_t START_BOOST_PWM = 255;
 const uint16_t START_BOOST_MS = 120;
 const uint16_t STANDBY_BLINK_INTERVAL_MS = 450;
 const uint8_t LED_BRIGHTNESS = 110;
-const bool MOTOR_A_FORWARD_PWM_INVERTED = true;
+const bool MOTOR_A_FORWARD_PWM_INVERTED = false;
 const bool MOTOR_A_BACKWARD_PWM_INVERTED = false;
 const bool MOTOR_A_LEFT_TURN_PWM_INVERTED = false;
-const bool MOTOR_A_RIGHT_TURN_PWM_INVERTED = true;
+const bool MOTOR_A_RIGHT_TURN_PWM_INVERTED = false;
 
 const char INDEX_HTML[] PROGMEM = R"rawliteral(
 <!DOCTYPE html>

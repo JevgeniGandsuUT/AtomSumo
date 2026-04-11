@@ -1,0 +1,18 @@
+line_id,part_name,manufacturer,part_number_or_model,category,function,qty_required,qty_ordered,unit_price_eur,total_price_eur,supplier,status,used_in_reference_build,order_ref,notes
+BOM-001,M5 ATOM main controller,M5Stack,ATOM,control_electronics,main_controller,1,1,,,assumed_available,assumed_available,yes,repo,Main controller used by sketch_mar21a/sketch_mar21a.ino
+BOM-002,M5 AtomS3R-CAM,M5Stack,AtomS3R-CAM,camera,front_and_downward_video,2,2,,,assumed_available,assumed_available,yes,repo,Two camera nodes used by cam/sketch_jan17a.ino
+BOM-003,VL53L0X ToF module,,GY-VL53L0X,sensor,front_distance_sensing,1,1,9.50,9.50,local_order_screenshot,ordered,yes,Order1.png,Front obstacle sensing over I2C
+BOM-004,TB6612FNG dual motor driver,SparkFun,ROB-14450,motor_control,dual_dc_motor_driver,1,1,13.36,13.36,Mouser,ordered,yes,Order2.png,Main dual motor driver for the reference build
+BOM-005,USB-C PD trigger module,,12V_0.5A,power,charging_input_source,1,1,4.28,4.28,local_order_screenshot,ordered,yes,Order1.png,Used as charging or bench setup input
+BOM-006,1-2S Li-Ion charger module,,,power,battery_charging,1,1,4.28,4.28,local_order_screenshot,ordered,yes,Order1.png,Charging path for 2S 18650 pack
+BOM-007,2x18650 battery holder,,PCB_THT,power,battery_mount,1,1,2.38,2.38,local_order_screenshot,ordered,yes,Order1.png,Requires CAD integration
+BOM-008,2S 3A BMS protection board,,,power,battery_protection,1,1,2.85,2.85,local_order_screenshot,ordered,yes,Order1.png,Must be surge tested with motors
+BOM-009,DC-DC step-down module 5A,,4.38V_to_36V,power,logic_and_motor_regulation,2,2,11.40,22.80,local_order_screenshot,ordered,yes,Order1.png,One set to 5.0V for logic and one set to 6.0V for motor rail
+BOM-010,18650 Li-Ion cell,Samsung,2500mAh_20A,power,main_battery_cell,2,2,10.45,20.90,local_order_screenshot,ordered,yes,Order1.png,2S pack uses two cells in series
+BOM-011,Wheel set 42x19 mm driven pair,,Pololu_2pk,drive_train,driven_wheel_pair,1,1,5.93,5.93,local_order_screenshot,ordered,yes,Order1.png,One pair of wheels is motor driven
+BOM-012,Wheel set 42x19 mm passive pair,,Pololu_2pk,drive_train,passive_support_wheel_pair,1,1,9.50,9.50,local_order_screenshot,ordered,yes,Order1.png,Second pair of wheels is free rolling without motors
+BOM-013,1000uF 16V radial capacitor,TDK,B41858C4108M000,power,motor_supply_bulk_capacitor,1,1,0.929,0.929,Mouser,ordered,yes,Order2.png,Motor rail bulk decoupling capacitor
+BOM-014,Slide switch,C_and_K,L201011MS02Q,power,master_power_switch,1,1,4.83,4.83,Mouser,ordered,yes,Order2.png,Master power switch
+BOM-016,N20 6V DC gearmotor,,N20_6V,drive_train,left_and_right_drive_motors,2,0,,,TBD,tbd,yes,,Only two of the four wheels are motor driven; motor rail fixed at 6.0V
+BOM-017,Custom PCB,,,electronics_integration,main_interconnect_board,1,0,,,TBD,design_ready_not_ordered,yes,PCB_repo,Gerber and EasyEDA source already exist
+BOM-018,3D printed chassis,,,mechanical,chassis_body,1,0,,,in_house,cad_complete_print_pending,yes,cad_repo,Generated from cad/chassis_n20.scad

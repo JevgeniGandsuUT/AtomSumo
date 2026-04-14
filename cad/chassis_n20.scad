@@ -6,6 +6,9 @@
 
 $fn = 54;
 
+render_variant = "assembled";
+print_layout_gap = 16;
+
 // ---- Overall limits ----
 platform_len = 150;   // max 150
 platform_wid = 108;   // narrowed so the lower ATOM keeps about 10 mm from the motors
@@ -109,6 +112,9 @@ atom_front_open_z = atom_open_z + (atom_front_bottom_lip - atom_front_top_lip) /
 atom_rear_open_w = atom_box_w - 2.0;
 atom_rear_open_h = atom_box_h - 8.0;
 atom_rear_open_z = atom_open_z - 1.0;
+front_atom_box_x = platform_len / 2 - wall_t - atom_box_d / 2 + atom_box_front_embed;
+front_atom_box_bottom_z = atom_open_z - atom_box_h / 2;
+front_atom_box_front_x = front_atom_box_x + atom_box_d / 2;
 
 // ---- Down-facing front camera ----
 down_cam_open = 20;
@@ -123,6 +129,8 @@ down_atom_box_h = down_atom_inner_h + 2 * down_atom_wall;
 down_atom_rear_open_w = down_atom_box_w + 0.8;
 down_atom_rear_open_h = down_atom_box_h + 0.8;
 down_atom_rear_open_z = floor_t + down_atom_box_h / 2;
+down_atom_box_center_z = floor_t + down_atom_box_h / 2;
+down_atom_box_front_x = down_cam_x + down_atom_box_l / 2;
 
 // ---- XL6009 mount (typical board ~43 x 21 mm) ----
 xl_gap_from_pcb = 4.0;
@@ -166,11 +174,41 @@ scoop_ground_gap = 3;
 scoop_tip_z = scoop_ground_gap - ground_clearance_target + scoop_plate_t / 2;
 scoop_tip_width = 34;
 scoop_tip_thickness = 2;
+scoop_attach_x = platform_len / 2 - wall_t / 2;
+scoop_tip_x = platform_len / 2 + scoop_reach;
+scoop_tip_bottom_z = scoop_tip_z - scoop_tip_thickness / 2;
+scoop_tip_shift_x = -scoop_tip_x;
+scoop_mount_bar_t = 5;
+scoop_mount_bar_w = 60;
+scoop_mount_bar_h = 10;
+scoop_tab_len = 8;
+scoop_tab_w = 10;
+scoop_tab_h = 6;
+scoop_tab_y = 24;
+scoop_bolt_y = 22;
+scoop_bolt_d = 3.4;
+scoop_bolt_head_d = 6.4;
+scoop_bolt_head_h = 1.8;
 front_wall_tilt = 6;
 rear_wall_tilt = 5;
 wall_slope_y_margin = 8;
 wall_slope_top_narrow = 12;
 wall_slope_strip_h = 8;
+
+front_sensor_ear_w = 12;
+front_sensor_ear_h = 8;
+front_sensor_bolt_y = 22.5;
+front_sensor_bolt_d = 2.9;
+front_sensor_head_d = 5.2;
+front_sensor_head_h = 1.6;
+
+down_camera_ear_x = 16;
+down_camera_ear_w = 6;
+down_camera_ear_t = 3;
+down_camera_bolt_y = down_atom_box_w / 2 + down_camera_ear_w / 2;
+down_camera_bolt_d = 2.9;
+down_camera_head_d = 5.2;
+down_camera_head_h = 1.6;
 
 module rounded_rect_2d(l, w, r) {
   rr = min(r, min(l, w) / 2);
@@ -187,6 +225,57 @@ module standoff(px, py, pz, h, d_outer, d_hole) {
   difference() {
     translate([px, py, pz]) cylinder(h = h, d = d_outer);
     translate([px, py, pz - 0.1]) cylinder(h = h + 0.2, d = d_hole);
+  }
+}
+
+module through_hole_x(x_start, py, pz, len, d) {
+  translate([x_start, py, pz])
+    rotate([0, 90, 0]) cylinder(h = len, d = d);
+}
+
+module countersink_x_front(x_front, py, pz, head_h, hole_d, head_d) {
+  translate([x_front - head_h, py, pz])
+    rotate([0, 90, 0]) cylinder(h = head_h + 0.05, d1 = hole_d, d2 = head_d);
+}
+
+module through_hole_z(px, py, z_start, len, d) {
+  translate([px, py, z_start]) cylinder(h = len, d = d);
+}
+
+module countersink_z_bottom(px, py, z_bottom, head_h, hole_d, head_d) {
+  translate([px, py, z_bottom])
+    cylinder(h = head_h + 0.05, d1 = head_d, d2 = hole_d);
+}
+
+module scoop_mount_interface_cuts() {
+  if (show_futuristic_kit) {
+    for (ypos = [-scoop_tab_y, 0, scoop_tab_y]) {
+      translate([
+        platform_len / 2 - wall_t / 2 - scoop_tab_len / 2 + 0.4,
+        ypos,
+        scoop_attach_z
+      ])
+        cube([scoop_tab_len + wall_t + 0.8, scoop_tab_w + 0.6, scoop_tab_h + 0.6], center = true);
+    }
+
+    for (ypos = [-scoop_bolt_y, scoop_bolt_y]) {
+      through_hole_x(platform_len / 2 - 14, ypos, scoop_attach_z, 16, scoop_bolt_d);
+      countersink_x_front(platform_len / 2 + 0.2, ypos, scoop_attach_z, scoop_bolt_head_h, scoop_bolt_d, scoop_bolt_head_d);
+    }
+  }
+}
+
+module front_sensor_mount_interface_cuts() {
+  for (side = [-1, 1]) {
+    through_hole_x(platform_len / 2 - wall_t - 1, side * front_sensor_bolt_y, atom_open_z, wall_t + 2, front_sensor_bolt_d);
+    countersink_x_front(platform_len / 2 + 0.2, side * front_sensor_bolt_y, atom_open_z, front_sensor_head_h, front_sensor_bolt_d, front_sensor_head_d);
+  }
+}
+
+module down_camera_mount_interface_cuts() {
+  for (side = [-1, 1]) {
+    through_hole_z(down_cam_x, side * down_camera_bolt_y, -0.2, floor_t + 0.6, down_camera_bolt_d);
+    countersink_z_bottom(down_cam_x, side * down_camera_bolt_y, -0.05, down_camera_head_h, down_camera_bolt_d, down_camera_head_d);
   }
 }
 
@@ -249,9 +338,16 @@ module base_shell() {
     translate([platform_len / 2 - wall_t / 2, atom_cam_open_y, front_atom_shell_open_z])
       cube([wall_t + 1.0, front_atom_shell_open_w, front_atom_shell_open_h], center = true);
 
+    // Mounting cuts for the detachable scoop and front holder.
+    scoop_mount_interface_cuts();
+    front_sensor_mount_interface_cuts();
+
     // Down-facing camera window in floor
     translate([down_cam_x, 0, floor_t / 2])
       cube([down_cam_open, down_cam_open, floor_t + 1], center = true);
+
+    // Countersunk fasteners tie the lower camera holder to the floor.
+    down_camera_mount_interface_cuts();
 
     // N20 motor shaft holes + body cavities
     for (side = [-1, 1]) {
@@ -336,59 +432,96 @@ module pcb_top_bay() {
 
 module front_sensor_mounts() {
   // ATOM S3R insert box (socket style)
-  atom_box_x = platform_len / 2 - wall_t - atom_box_d / 2 + atom_box_front_embed;
-  atom_box_bottom_z = atom_open_z - atom_box_h / 2;
   difference() {
     union() {
-      translate([atom_box_x, 0, atom_open_z])
+      translate([front_atom_box_x, 0, atom_open_z])
         cube([atom_box_d, atom_box_w, atom_box_h], center = true);
+
+      // Side ears spread the fastener load into the front wall columns.
+      for (side = [-1, 1]) {
+        hull() {
+          translate([front_atom_box_x, side * (atom_box_w / 2 - 1), atom_open_z])
+            cube([atom_box_d - 1, 2, front_sensor_ear_h], center = true);
+          translate([front_atom_box_x, side * front_sensor_bolt_y, atom_open_z])
+            cube([atom_box_d - 1, front_sensor_ear_w, front_sensor_ear_h], center = true);
+        }
+      }
 
       // Structural brace ties the front ATOM socket into the front wall so it
       // does not appear to float above the chassis.
       hull() {
         translate([platform_len / 2 - wall_t / 2 - atom_box_brace_t / 2, 0, hull_h + atom_box_brace_h / 2 - 1])
           cube([atom_box_brace_t, atom_box_brace_w, atom_box_brace_h], center = true);
-        translate([atom_box_x - atom_box_d / 2 + atom_box_brace_under_len / 2 + 1, 0, atom_box_bottom_z + atom_box_brace_t / 2])
+        translate([front_atom_box_x - atom_box_d / 2 + atom_box_brace_under_len / 2 + 1, 0, front_atom_box_bottom_z + atom_box_brace_t / 2])
           cube([atom_box_brace_under_len, atom_box_brace_w - 2, atom_box_brace_t], center = true);
       }
     }
 
     // Inner cavity (insert from top/rear)
-    translate([atom_box_x, 0, atom_open_z])
+    translate([front_atom_box_x, 0, atom_open_z])
       cube([atom_inner_d + 1.2, atom_inner_w, atom_inner_h], center = true);
 
     // Top opening for easier insertion
-    translate([atom_box_x, 0, atom_open_z + atom_box_h / 2 - atom_wall / 2])
+    translate([front_atom_box_x, 0, atom_open_z + atom_box_h / 2 - atom_wall / 2])
       cube([atom_box_d + 0.6, atom_inner_w + 0.6, atom_wall + 0.6], center = true);
 
     // Enlarged rear cable/service opening for wiring and connector access.
-    translate([atom_box_x - atom_box_d / 2, 0, atom_rear_open_z])
+    translate([front_atom_box_x - atom_box_d / 2, 0, atom_rear_open_z])
       cube([atom_wall + 0.8, atom_rear_open_w, atom_rear_open_h], center = true);
 
     // Front access opening through the ATOM socket wall.
-    translate([atom_box_x + atom_box_d / 2 - atom_wall / 2, atom_cam_open_y, atom_front_open_z])
+    translate([front_atom_box_x + atom_box_d / 2 - atom_wall / 2, atom_cam_open_y, atom_front_open_z])
       cube([atom_wall + 1.0, atom_front_open_w, atom_front_open_h], center = true);
+
+    // Two through-bolts clamp the holder to the side columns of the front wall.
+    for (side = [-1, 1]) {
+      through_hole_x(front_atom_box_x - atom_box_d / 2 - 0.2, side * front_sensor_bolt_y, atom_open_z, atom_box_d + 0.4, front_sensor_bolt_d);
+    }
   }
 }
 
 module front_battle_scoop() {
-  attach_x = platform_len / 2 - wall_t / 2;
-  tip_x = platform_len / 2 + scoop_reach;
+  difference() {
+    union() {
+      // Triangle-like battle wedge: wide at the hull, narrower at the tip.
+      hull() {
+        translate([scoop_attach_x, 0, scoop_attach_z])
+          cube([scoop_plate_t, scoop_width, scoop_plate_t], center = true);
+        translate([scoop_tip_x, 0, scoop_tip_z])
+          cube([scoop_plate_t, scoop_tip_width, scoop_tip_thickness], center = true);
+      }
 
-  // Triangle-like battle wedge: wide at the hull, narrower at the tip.
-  hull() {
-    translate([attach_x, 0, scoop_attach_z])
-      cube([scoop_plate_t, scoop_width, scoop_plate_t], center = true);
-    translate([tip_x, 0, scoop_tip_z])
-      cube([scoop_plate_t, scoop_tip_width, scoop_tip_thickness], center = true);
+      // A thicker rear bar and three keys take the brunt of frontal hits.
+      translate([platform_len / 2 - scoop_mount_bar_t / 2, 0, scoop_attach_z])
+        cube([scoop_mount_bar_t, scoop_mount_bar_w, scoop_mount_bar_h], center = true);
+
+      for (ypos = [-scoop_tab_y, 0, scoop_tab_y]) {
+        translate([platform_len / 2 - wall_t - scoop_tab_len / 2, ypos, scoop_attach_z])
+          cube([scoop_tab_len, scoop_tab_w, scoop_tab_h], center = true);
+      }
+    }
+
+    // Two countersunk M3 bolts clamp the scoop into the chassis nose.
+    for (ypos = [-scoop_bolt_y, scoop_bolt_y]) {
+      through_hole_x(platform_len / 2 - 16, ypos, scoop_attach_z, 18, scoop_bolt_d);
+      countersink_x_front(platform_len / 2 + 0.01, ypos, scoop_attach_z, scoop_bolt_head_h, scoop_bolt_d, scoop_bolt_head_d);
+    }
   }
 }
 
 module down_camera_mount() {
   // Boxed socket for a full AtomS3R-CAM mounted inside and looking downward.
   difference() {
-    translate([down_cam_x, 0, floor_t + down_atom_box_h / 2])
-      cube([down_atom_box_l, down_atom_box_w, down_atom_box_h], center = true);
+    union() {
+      translate([down_cam_x, 0, floor_t + down_atom_box_h / 2])
+        cube([down_atom_box_l, down_atom_box_w, down_atom_box_h], center = true);
+
+      // Side ears rest on the floor and accept bolts from below.
+      for (side = [-1, 1]) {
+        translate([down_cam_x, side * down_camera_bolt_y, floor_t + down_camera_ear_t / 2])
+          cube([down_camera_ear_x, down_camera_ear_w, down_camera_ear_t], center = true);
+      }
+    }
 
     // Internal cavity for AtomS3R-CAM body
     translate([down_cam_x, 0, floor_t + down_atom_wall + down_atom_inner_h / 2])
@@ -405,6 +538,11 @@ module down_camera_mount() {
     // Large optical window through the floor
     translate([down_cam_x, 0, (floor_t + down_atom_wall) / 2])
       cube([down_cam_open, down_cam_open, floor_t + down_atom_wall + 1], center = true);
+
+    // Two M2.5 bolts from the underside secure the lower holder.
+    for (side = [-1, 1]) {
+      through_hole_z(down_cam_x, side * down_camera_bolt_y, floor_t - 0.1, down_camera_ear_t + 0.3, down_camera_bolt_d);
+    }
   }
 }
 
@@ -517,4 +655,63 @@ module chassis_body() {
   }
 }
 
-chassis_body();
+module printable_chassis_core() {
+  union() {
+    base_shell();
+    n20_motor_mounts();
+    powerbank_bay_features();
+    rear_axle_supports();
+  }
+}
+
+module printable_scoop_part() {
+  // Flip the scoop onto its rear mounting bar so it prints support-free.
+  translate([scoop_tip_x + scoop_plate_t / 2, 0, scoop_attach_z + scoop_mount_bar_h / 2])
+    rotate([0, 180, 0])
+      front_battle_scoop();
+}
+
+module printable_front_sensor_mount_part() {
+  rotate([0, 90, 0])
+    translate([-front_atom_box_front_x, 0, -atom_open_z])
+      front_sensor_mounts();
+}
+
+module printable_down_camera_mount_part() {
+  translate([-down_cam_x, 0, -floor_t])
+    down_camera_mount();
+}
+
+module printable_layout(layout_gap = 16) {
+  printable_chassis_core();
+
+  if (show_futuristic_kit) {
+    translate([0, platform_wid / 2 + layout_gap + 29, 0])
+      rotate([0, 0, 90])
+        printable_scoop_part();
+  }
+
+  translate([-24, -(platform_wid / 2 + layout_gap + 18), 0])
+    printable_front_sensor_mount_part();
+
+  translate([24, -(platform_wid / 2 + layout_gap + 18), 0])
+    printable_down_camera_mount_part();
+}
+
+module render_chassis_variant(variant = "assembled", layout_gap = 16) {
+  if (variant == "printable_layout") {
+    printable_layout(layout_gap);
+  } else if (variant == "printable_core") {
+    printable_chassis_core();
+  } else if (variant == "printable_scoop") {
+    printable_scoop_part();
+  } else if (variant == "printable_front_sensor_mount") {
+    printable_front_sensor_mount_part();
+  } else if (variant == "printable_down_camera_mount") {
+    printable_down_camera_mount_part();
+  } else {
+    chassis_body();
+  }
+}
+
+render_chassis_variant(render_variant, print_layout_gap);

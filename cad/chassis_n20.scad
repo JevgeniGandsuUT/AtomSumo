@@ -8,6 +8,8 @@ $fn = 54;
 
 render_variant = "assembled";
 print_layout_gap = 16;
+show_scoop_in_printable_layout = false;
+show_down_camera_mount_in_printable_layout = true;
 
 // ---- Overall limits ----
 platform_len = 150;   // max 150
@@ -181,10 +183,6 @@ scoop_tip_shift_x = -scoop_tip_x;
 scoop_mount_bar_t = 5;
 scoop_mount_bar_w = 60;
 scoop_mount_bar_h = 10;
-scoop_tab_len = 8;
-scoop_tab_w = 10;
-scoop_tab_h = 6;
-scoop_tab_y = 24;
 scoop_bolt_y = 22;
 scoop_bolt_d = 3.4;
 scoop_bolt_head_d = 6.4;
@@ -249,15 +247,6 @@ module countersink_z_bottom(px, py, z_bottom, head_h, hole_d, head_d) {
 
 module scoop_mount_interface_cuts() {
   if (show_futuristic_kit) {
-    for (ypos = [-scoop_tab_y, 0, scoop_tab_y]) {
-      translate([
-        platform_len / 2 - wall_t / 2 - scoop_tab_len / 2 + 0.4,
-        ypos,
-        scoop_attach_z
-      ])
-        cube([scoop_tab_len + wall_t + 0.8, scoop_tab_w + 0.6, scoop_tab_h + 0.6], center = true);
-    }
-
     for (ypos = [-scoop_bolt_y, scoop_bolt_y]) {
       through_hole_x(platform_len / 2 - 14, ypos, scoop_attach_z, 16, scoop_bolt_d);
       countersink_x_front(platform_len / 2 + 0.2, ypos, scoop_attach_z, scoop_bolt_head_h, scoop_bolt_d, scoop_bolt_head_d);
@@ -279,19 +268,29 @@ module down_camera_mount_interface_cuts() {
   }
 }
 
-module base_shell() {
+module base_shell(
+  include_front_guard = true,
+  include_front_visor = true,
+  open_front_guard_to_top = false,
+  open_rear_loading_to_top = false,
+  include_round_wall_holes = true
+) {
   difference() {
     union() {
       linear_extrude(hull_h)
         rounded_rect_2d(platform_len, platform_wid, corner_r);
 
       // Front protection extension
-      translate([platform_len / 2 - wall_t / 2, 0, hull_h + front_guard_h / 2])
-        cube([wall_t, front_guard_w, front_guard_h], center = true);
+      if (include_front_guard) {
+        translate([platform_len / 2 - wall_t / 2, 0, hull_h + front_guard_h / 2])
+          cube([wall_t, front_guard_w, front_guard_h], center = true);
+      }
 
       // Slimmer, slightly raised visor leaves more room to insert the front ATOM.
-      translate([platform_len / 2 - front_guard_visor_d / 2, 0, hull_h + front_guard_h + front_guard_visor_h / 2 - 0.5])
-        cube([front_guard_visor_d, front_guard_w - 10, front_guard_visor_h], center = true);
+      if (include_front_guard && include_front_visor) {
+        translate([platform_len / 2 - front_guard_visor_d / 2, 0, hull_h + front_guard_h + front_guard_visor_h / 2 - 0.5])
+          cube([front_guard_visor_d, front_guard_w - 10, front_guard_visor_h], center = true);
+      }
 
       // Built-in sloped front and rear walls give the shell a more futuristic stance.
       if (show_futuristic_kit) {
@@ -327,20 +326,41 @@ module base_shell() {
         );
 
     // Rear loading opening so the powerbank can slide in from the back.
-    translate([
-      -platform_len / 2 + wall_t / 2,
-      0,
-      pb_rear_open_z
-    ])
-      cube([wall_t + 1.2, pb_rear_open_w, pb_rear_open_h], center = true);
+    if (open_rear_loading_to_top) {
+      // Printable variant: remove the top bridge over the battery opening.
+      rear_open_bottom_z = pb_rear_open_z - pb_rear_open_h / 2;
+      translate([
+        -platform_len / 2 + wall_t / 2,
+        0,
+        rear_open_bottom_z + (hull_h - rear_open_bottom_z) / 2
+      ])
+        cube([wall_t + 1.2, pb_rear_open_w, hull_h - rear_open_bottom_z + 1.0], center = true);
+    } else {
+      translate([
+        -platform_len / 2 + wall_t / 2,
+        0,
+        pb_rear_open_z
+      ])
+        cube([wall_t + 1.2, pb_rear_open_w, pb_rear_open_h], center = true);
+    }
 
     // Larger front relief opening so the ATOM can slide into its socket.
-    translate([platform_len / 2 - wall_t / 2, atom_cam_open_y, front_atom_shell_open_z])
-      cube([wall_t + 1.0, front_atom_shell_open_w, front_atom_shell_open_h], center = true);
+    if (include_front_guard && open_front_guard_to_top) {
+      // Printable variant: keep the front upright, but remove the top bridge
+      // so the opening reaches the top edge and nothing hangs mid-air.
+      translate([platform_len / 2 - wall_t / 2, atom_cam_open_y, hull_h + front_guard_h / 2])
+        cube([wall_t + 1.0, front_atom_shell_open_w, front_guard_h + 1.0], center = true);
+    } else {
+      translate([platform_len / 2 - wall_t / 2, atom_cam_open_y, front_atom_shell_open_z])
+        cube([wall_t + 1.0, front_atom_shell_open_w, front_atom_shell_open_h], center = true);
+    }
 
-    // Mounting cuts for the detachable scoop and front holder.
-    scoop_mount_interface_cuts();
-    front_sensor_mount_interface_cuts();
+    // Mounting cuts for the detachable scoop and front holder. In the
+    // printable core we keep these solid and drill them later if needed.
+    if (include_round_wall_holes) {
+      scoop_mount_interface_cuts();
+      front_sensor_mount_interface_cuts();
+    }
 
     // Down-facing camera window in floor
     translate([down_cam_x, 0, floor_t / 2])
@@ -355,8 +375,10 @@ module base_shell() {
       y_motor = side * (platform_wid / 2 - wall_t - n20_len / 2 + 0.8);
 
       // Shaft hole through side wall
-      translate([motor_x, y_outer, motor_z])
-        rotate([90, 0, 0]) cylinder(h = wall_t + 1.0, d = shaft_d, center = true);
+      if (include_round_wall_holes) {
+        translate([motor_x, y_outer, motor_z])
+          rotate([90, 0, 0]) cylinder(h = wall_t + 1.0, d = shaft_d, center = true);
+      }
 
       // Motor body cavity
       translate([motor_x, y_motor, motor_z])
@@ -364,36 +386,43 @@ module base_shell() {
     }
 
     // Rear through-hole for a full-width axle carrying the second wheel pair.
-    translate([rear_axle_x, 0, rear_axle_z])
-      rotate([90, 0, 0]) cylinder(h = platform_wid + 2, d = rear_axle_d, center = true);
+    if (include_round_wall_holes) {
+      translate([rear_axle_x, 0, rear_axle_z])
+        rotate([90, 0, 0]) cylinder(h = platform_wid + 2, d = rear_axle_d, center = true);
+    }
 
   }
 }
 
-module powerbank_bay_features() {
+module powerbank_bay_features(include_front_lip = true, include_side_rails = true) {
   rail_t = pb_rail_t;
   stop_t = 3;
 
   // Side rails guide the powerbank while it slides in from the rear.
-  for (sy = [-1, 1]) {
-    translate([
-      pb_slot_x,
-      sy * (pb_slot_wid / 2 + rail_t / 2),
-      floor_t + pb_slot_h / 2
-    ])
-      cube([pb_slot_len, rail_t, pb_slot_h], center = true);
+  if (include_side_rails) {
+    for (sy = [-1, 1]) {
+      translate([
+        pb_slot_x,
+        sy * (pb_slot_wid / 2 + rail_t / 2),
+        floor_t + pb_slot_h / 2
+      ])
+        cube([pb_slot_len, rail_t, pb_slot_h], center = true);
+    }
   }
 
-  // Front low lip
-  translate([
-    pb_slot_x + pb_slot_len / 2 + stop_t / 2,
-    0,
-    floor_t + 4 / 2
-  ])
-    cube([stop_t, pb_slot_wid + 2 * rail_t, 4], center = true);
+  if (include_front_lip) {
+    // Front low lip stops the pack in the assembled view, but it can be
+    // omitted from the support-free printable core.
+    translate([
+      pb_slot_x + pb_slot_len / 2 + stop_t / 2,
+      0,
+      floor_t + 4 / 2
+    ])
+      cube([stop_t, pb_slot_wid + 2 * rail_t, 4], center = true);
+  }
 }
 
-module rear_axle_supports() {
+module rear_axle_supports(include_axle_hole = true) {
   difference() {
     union() {
       // Side support posts add a second fixing point for the rear axle
@@ -408,8 +437,10 @@ module rear_axle_supports() {
       }
     }
 
-    translate([rear_axle_x, 0, rear_axle_z])
-      rotate([90, 0, 0]) cylinder(h = platform_wid + 2, d = rear_axle_d, center = true);
+    if (include_axle_hole) {
+      translate([rear_axle_x, 0, rear_axle_z])
+        rotate([90, 0, 0]) cylinder(h = platform_wid + 2, d = rear_axle_d, center = true);
+    }
   }
 }
 
@@ -430,7 +461,12 @@ module pcb_top_bay() {
   }
 }
 
-module front_sensor_mounts() {
+module front_sensor_mounts(
+  open_front_access_to_top = false,
+  remove_top_rim = false,
+  remove_bottom_rim = false,
+  remove_rear_rim = false
+) {
   // ATOM S3R insert box (socket style)
   difference() {
     union() {
@@ -447,31 +483,47 @@ module front_sensor_mounts() {
         }
       }
 
-      // Structural brace ties the front ATOM socket into the front wall so it
-      // does not appear to float above the chassis.
-      hull() {
-        translate([platform_len / 2 - wall_t / 2 - atom_box_brace_t / 2, 0, hull_h + atom_box_brace_h / 2 - 1])
-          cube([atom_box_brace_t, atom_box_brace_w, atom_box_brace_h], center = true);
-        translate([front_atom_box_x - atom_box_d / 2 + atom_box_brace_under_len / 2 + 1, 0, front_atom_box_bottom_z + atom_box_brace_t / 2])
-          cube([atom_box_brace_under_len, atom_box_brace_w - 2, atom_box_brace_t], center = true);
-      }
     }
 
     // Inner cavity (insert from top/rear)
     translate([front_atom_box_x, 0, atom_open_z])
       cube([atom_inner_d + 1.2, atom_inner_w, atom_inner_h], center = true);
 
+    // Printable variant: open the bed-facing side wide enough so no thin
+    // inner bridge remains after the part is rotated window-down.
+    if (remove_bottom_rim) {
+      translate([front_atom_box_x, 0, front_atom_box_bottom_z + atom_wall / 2])
+        cube([atom_box_d + 0.8, atom_box_w + 0.8, atom_wall + 0.8], center = true);
+    }
+
     // Top opening for easier insertion
     translate([front_atom_box_x, 0, atom_open_z + atom_box_h / 2 - atom_wall / 2])
-      cube([atom_box_d + 0.6, atom_inner_w + 0.6, atom_wall + 0.6], center = true);
+      cube([
+        remove_top_rim ? atom_box_d + 0.8 : atom_box_d + 0.6,
+        remove_top_rim ? atom_box_w + 0.8 : atom_inner_w + 0.6,
+        atom_wall + 0.6
+      ], center = true);
 
     // Enlarged rear cable/service opening for wiring and connector access.
-    translate([front_atom_box_x - atom_box_d / 2, 0, atom_rear_open_z])
-      cube([atom_wall + 0.8, atom_rear_open_w, atom_rear_open_h], center = true);
+    translate([front_atom_box_x - atom_box_d / 2, 0, remove_rear_rim ? atom_open_z : atom_rear_open_z])
+      cube([
+        atom_wall + 0.8,
+        atom_rear_open_w,
+        remove_rear_rim ? atom_box_h + 0.8 : atom_rear_open_h
+      ], center = true);
 
     // Front access opening through the ATOM socket wall.
-    translate([front_atom_box_x + atom_box_d / 2 - atom_wall / 2, atom_cam_open_y, atom_front_open_z])
-      cube([atom_wall + 1.0, atom_front_open_w, atom_front_open_h], center = true);
+    if (open_front_access_to_top) {
+      translate([
+        front_atom_box_x + atom_box_d / 2 - atom_wall / 2,
+        atom_cam_open_y,
+        front_atom_box_bottom_z + atom_box_h / 2
+      ])
+        cube([atom_wall + 1.0, atom_front_open_w, atom_box_h + 0.6], center = true);
+    } else {
+      translate([front_atom_box_x + atom_box_d / 2 - atom_wall / 2, atom_cam_open_y, atom_front_open_z])
+        cube([atom_wall + 1.0, atom_front_open_w, atom_front_open_h], center = true);
+    }
 
     // Two through-bolts clamp the holder to the side columns of the front wall.
     for (side = [-1, 1]) {
@@ -480,7 +532,7 @@ module front_sensor_mounts() {
   }
 }
 
-module front_battle_scoop() {
+module front_battle_scoop(include_bolt_holes = true) {
   difference() {
     union() {
       // Triangle-like battle wedge: wide at the hull, narrower at the tip.
@@ -491,25 +543,22 @@ module front_battle_scoop() {
           cube([scoop_plate_t, scoop_tip_width, scoop_tip_thickness], center = true);
       }
 
-      // A thicker rear bar and three keys take the brunt of frontal hits.
+      // A thicker rear bar spreads frontal load into the bolt area.
       translate([platform_len / 2 - scoop_mount_bar_t / 2, 0, scoop_attach_z])
         cube([scoop_mount_bar_t, scoop_mount_bar_w, scoop_mount_bar_h], center = true);
-
-      for (ypos = [-scoop_tab_y, 0, scoop_tab_y]) {
-        translate([platform_len / 2 - wall_t - scoop_tab_len / 2, ypos, scoop_attach_z])
-          cube([scoop_tab_len, scoop_tab_w, scoop_tab_h], center = true);
-      }
     }
 
     // Two countersunk M3 bolts clamp the scoop into the chassis nose.
-    for (ypos = [-scoop_bolt_y, scoop_bolt_y]) {
-      through_hole_x(platform_len / 2 - 16, ypos, scoop_attach_z, 18, scoop_bolt_d);
-      countersink_x_front(platform_len / 2 + 0.01, ypos, scoop_attach_z, scoop_bolt_head_h, scoop_bolt_d, scoop_bolt_head_d);
+    if (include_bolt_holes) {
+      for (ypos = [-scoop_bolt_y, scoop_bolt_y]) {
+        through_hole_x(platform_len / 2 - 16, ypos, scoop_attach_z, 18, scoop_bolt_d);
+        countersink_x_front(platform_len / 2 + 0.01, ypos, scoop_attach_z, scoop_bolt_head_h, scoop_bolt_d, scoop_bolt_head_d);
+      }
     }
   }
 }
 
-module down_camera_mount() {
+module down_camera_mount(remove_top_rim = false, remove_bottom_rim = false) {
   // Boxed socket for a full AtomS3R-CAM mounted inside and looking downward.
   difference() {
     union() {
@@ -529,15 +578,24 @@ module down_camera_mount() {
 
     // Top insertion opening
     translate([down_cam_x, 0, floor_t + down_atom_box_h - down_atom_wall / 2])
-      cube([down_atom_inner_l + 0.8, down_atom_inner_w + 0.8, down_atom_wall + 0.8], center = true);
+      cube([
+        remove_top_rim ? down_atom_box_l + 0.8 : down_atom_inner_l + 0.8,
+        remove_top_rim ? down_atom_box_w + 0.8 : down_atom_inner_w + 0.8,
+        down_atom_wall + 0.8
+      ], center = true);
 
     // Remove the rear wall entirely so the lower ATOM can slide in freely.
     translate([down_cam_x - down_atom_box_l / 2 + down_atom_wall / 2, 0, down_atom_rear_open_z])
       cube([down_atom_wall + 0.8, down_atom_rear_open_w, down_atom_rear_open_h], center = true);
 
-    // Large optical window through the floor
+    // Large optical window through the floor. In the printable variant this
+    // opens wider so no small inner bridge remains over the window.
     translate([down_cam_x, 0, (floor_t + down_atom_wall) / 2])
-      cube([down_cam_open, down_cam_open, floor_t + down_atom_wall + 1], center = true);
+      cube([
+        remove_bottom_rim ? down_atom_inner_l + 0.8 : down_cam_open,
+        remove_bottom_rim ? down_atom_inner_w + 0.8 : down_cam_open,
+        floor_t + down_atom_wall + 1
+      ], center = true);
 
     // Two M2.5 bolts from the underside secure the lower holder.
     for (side = [-1, 1]) {
@@ -595,47 +653,71 @@ module xl6009_mount() {
   }
 }
 
-module n20_motor_mounts() {
+module n20_motor_mounts(simple_walls_only = false, remove_inner_walls = false) {
   for (side = [-1, 1]) {
     y_motor = side * (platform_wid / 2 - wall_t - n20_len / 2 + 0.8);
-    insert_slot_bottom_z = motor_z + (n20_h + 0.8) / 2 - 0.4;
-    insert_slot_top_z = floor_t + n20_mount_h + 0.6;
-    insert_slot_h = insert_slot_top_z - insert_slot_bottom_z;
-    insert_slot_z = insert_slot_bottom_z + insert_slot_h / 2;
+    outer_wall_y = y_motor + side * (n20_outer_y / 2 - n20_mount_wall / 2);
+    inner_wall_y = y_motor - side * (n20_outer_y / 2 - n20_mount_wall / 2);
+    front_wall_x = motor_x + n20_outer_x / 2 - n20_mount_wall / 2;
+    rear_wall_x = motor_x - n20_outer_x / 2 + n20_mount_wall / 2;
+    mount_wall_z = floor_t + n20_mount_h / 2;
 
-    difference() {
-      // Cradle body attached to floor and partially to side wall
-      translate([motor_x, y_motor, floor_t + n20_mount_h / 2])
-        cube([n20_outer_x, n20_outer_y, n20_mount_h], center = true);
+    if (simple_walls_only) {
+      // Printable variant: keep only simple support-free walls around the
+      // motor cavity, with the inner wall omitted near the central ATOM.
+      translate([motor_x, outer_wall_y, mount_wall_z])
+        cube([n20_outer_x, n20_mount_wall, n20_mount_h], center = true);
 
-      // Motor body cavity
-      translate([motor_x, y_motor, motor_z])
-        cube([n20_wid + n20_clear, n20_len + n20_clear, n20_h + 0.8], center = true);
+      translate([front_wall_x, y_motor, mount_wall_z])
+        cube([n20_mount_wall, n20_outer_y, n20_mount_h], center = true);
 
-      // Full top slot so the N20 motor can drop in vertically from above.
-      translate([motor_x, y_motor, insert_slot_z])
-        cube([n20_wid + n20_clear + 1.6, n20_len + n20_clear + 1.6, insert_slot_h], center = true);
+      translate([rear_wall_x, y_motor, mount_wall_z])
+        cube([n20_mount_wall, n20_outer_y, n20_mount_h], center = true);
 
-      // Shaft relief on outer side
-      translate([
-        motor_x,
-        y_motor + side * (n20_outer_y / 2 - n20_mount_wall / 2),
-        motor_z
-      ])
-        rotate([90, 0, 0]) cylinder(h = n20_mount_wall + 1.0, d = 7.0, center = true);
+      if (!remove_inner_walls) {
+        translate([motor_x, inner_wall_y, mount_wall_z])
+          cube([n20_outer_x, n20_mount_wall, n20_mount_h], center = true);
+      }
+    } else {
+      insert_slot_bottom_z = motor_z + (n20_h + 0.8) / 2 - 0.4;
+      insert_slot_top_z = floor_t + n20_mount_h + 0.6;
+      insert_slot_h = insert_slot_top_z - insert_slot_bottom_z;
+      insert_slot_z = insert_slot_bottom_z + insert_slot_h / 2;
 
-      // Cable notch on inner side
-      translate([
-        motor_x,
-        y_motor - side * (n20_outer_y / 2 - n20_mount_wall / 2),
-        motor_z
-      ])
-        cube([8, n20_mount_wall + 1.0, 6], center = true);
+      difference() {
+        // Cradle body attached to floor and partially to side wall
+        translate([motor_x, y_motor, floor_t + n20_mount_h / 2])
+          cube([n20_outer_x, n20_outer_y, n20_mount_h], center = true);
 
-      // Zip-tie slots
-      for (yoff = [-8, 8]) {
-        translate([motor_x, y_motor + yoff, floor_t + 2.4])
-          cube([n20_outer_x + 0.8, n20_zip_slot_w, n20_zip_slot_h], center = true);
+        // Motor body cavity
+        translate([motor_x, y_motor, motor_z])
+          cube([n20_wid + n20_clear, n20_len + n20_clear, n20_h + 0.8], center = true);
+
+        // Full top slot so the N20 motor can drop in vertically from above.
+        translate([motor_x, y_motor, insert_slot_z])
+          cube([n20_wid + n20_clear + 1.6, n20_len + n20_clear + 1.6, insert_slot_h], center = true);
+
+        // Shaft relief on outer side
+        translate([
+          motor_x,
+          outer_wall_y,
+          motor_z
+        ])
+          rotate([90, 0, 0]) cylinder(h = n20_mount_wall + 1.0, d = 7.0, center = true);
+
+        // Cable notch on inner side
+        translate([
+          motor_x,
+          inner_wall_y,
+          motor_z
+        ])
+          cube([8, n20_mount_wall + 1.0, 6], center = true);
+
+        // Zip-tie slots
+        for (yoff = [-8, 8]) {
+          translate([motor_x, y_motor + yoff, floor_t + 2.4])
+            cube([n20_outer_x + 0.8, n20_zip_slot_w, n20_zip_slot_h], center = true);
+        }
       }
     }
   }
@@ -657,10 +739,10 @@ module chassis_body() {
 
 module printable_chassis_core() {
   union() {
-    base_shell();
-    n20_motor_mounts();
-    powerbank_bay_features();
-    rear_axle_supports();
+    base_shell(true, false, true, true, false);
+    n20_motor_mounts(true, true);
+    powerbank_bay_features(false, false);
+    rear_axle_supports(false);
   }
 }
 
@@ -668,34 +750,50 @@ module printable_scoop_part() {
   // Flip the scoop onto its rear mounting bar so it prints support-free.
   translate([scoop_tip_x + scoop_plate_t / 2, 0, scoop_attach_z + scoop_mount_bar_h / 2])
     rotate([0, 180, 0])
-      front_battle_scoop();
+      front_battle_scoop(false);
 }
 
 module printable_front_sensor_mount_part() {
-  rotate([0, 90, 0])
-    translate([-front_atom_box_front_x, 0, -atom_open_z])
-      front_sensor_mounts();
+  // Put the front access window downward onto the bed so the cavity stays
+  // support-free and no top bridge is left over the opening. Shift it so
+  // the printable footprint stays centered near the origin.
+  translate([-atom_open_z, 0, front_atom_box_front_x])
+    rotate([0, 90, 0])
+      front_sensor_mounts(true, true, false, true);
 }
 
 module printable_down_camera_mount_part() {
-  translate([-down_cam_x, 0, -floor_t])
-    down_camera_mount();
+  // Put the camera window downward onto the bed, matching the front M5 box
+  // printable orientation style. Flip it 180 degrees on the bed so the
+  // larger mounting ears face the opposite direction in the layout.
+  rotate([0, 0, 180])
+    translate([-down_cam_x, 0, -floor_t])
+      down_camera_mount(true, true);
 }
 
 module printable_layout(layout_gap = 16) {
+  mount_row_y = -(platform_wid / 2 + layout_gap + max(
+    max(atom_box_w / 2, front_sensor_bolt_y + front_sensor_ear_w / 2),
+    max(down_atom_box_w / 2, down_camera_bolt_y + down_camera_ear_w / 2)
+  ));
+  front_mount_layout_x = -(atom_box_h / 2 + layout_gap / 2);
+  down_mount_layout_x = down_atom_box_l / 2 + layout_gap / 2;
+
   printable_chassis_core();
 
-  if (show_futuristic_kit) {
+  if (show_futuristic_kit && show_scoop_in_printable_layout) {
     translate([0, platform_wid / 2 + layout_gap + 29, 0])
       rotate([0, 0, 90])
         printable_scoop_part();
   }
 
-  translate([-24, -(platform_wid / 2 + layout_gap + 18), 0])
+  translate([front_mount_layout_x, mount_row_y, 0])
     printable_front_sensor_mount_part();
 
-  translate([24, -(platform_wid / 2 + layout_gap + 18), 0])
-    printable_down_camera_mount_part();
+  if (show_down_camera_mount_in_printable_layout) {
+    translate([down_mount_layout_x, mount_row_y, 0])
+      printable_down_camera_mount_part();
+  }
 }
 
 module render_chassis_variant(variant = "assembled", layout_gap = 16) {

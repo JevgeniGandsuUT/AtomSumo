@@ -1,20 +1,37 @@
 #include <WebServer.h>
 #include <DNSServer.h>
+#include <WiFi.h>
+#include <Wire.h>
+#include <Adafruit_VL53L0X.h>
 
 #define PWMA 22
 #define AIN1 19
 #define AIN2 23
+//
+//#define PWMA 23
+//#define AIN1 19
+//#define AIN2 22
+
+
 
 #define PWMB 25
 #define BIN1 21
 #define BIN2 33
+
+
+
 #define ATOM_LED_PIN 27
+#define TOF_PRIMARY_SDA 32
+#define TOF_PRIMARY_SCL 26
+#define TOF_ALT_SDA 26
+#define TOF_ALT_SCL 32
 
 const char *AP_SSID = "Robot-Control";
 const char *AP_PASSWORD = "robot123";
 
 WebServer server(80);
 DNSServer dnsServer;
+Adafruit_VL53L0X tofSensor;
 const uint16_t DNS_PORT = 53;
 
 enum MotionDirection {
@@ -22,13 +39,26 @@ enum MotionDirection {
   DIR_FORWARD,
   DIR_BACKWARD,
   DIR_LEFT,
-  DIR_RIGHT
+  DIR_RIGHT,
+  DIR_FORWARD_LEFT,
+  DIR_FORWARD_RIGHT,
+  DIR_BACKWARD_LEFT,
+  DIR_BACKWARD_RIGHT
 };
 
 MotionDirection currentDirection = DIR_STOP;
 uint8_t motorSpeed = 180;
+uint8_t arcTurnInnerTrim = 55;
 bool standbyBlinkOn = false;
+bool tofReady = false;
+String i2cScanResult = "";
+uint8_t activeTofSda = TOF_PRIMARY_SDA;
+uint8_t activeTofScl = TOF_PRIMARY_SCL;
 unsigned long lastStandbyBlinkMs = 0;
+unsigned long lastTofReadMs = 0;
+uint16_t lastTofMm = 0;
+uint8_t lastTofStatus = 255;
+bool lastTofValid = false;
 
 // Forward on many small robots can overload one side at max PWM.
 // Keep A slightly prioritized and give both motors a short start boost.
@@ -37,9 +67,12 @@ const uint8_t MOTOR_B_FORWARD_TRIM = 255;
 const uint8_t MOTOR_A_BACKWARD_TRIM = 255;
 const uint8_t MOTOR_B_BACKWARD_TRIM = 255;
 const uint8_t START_BOOST_PWM = 255;
+const uint8_t ARC_TURN_MIN_INNER_PWM = 75;
 const uint16_t START_BOOST_MS = 120;
 const uint16_t STANDBY_BLINK_INTERVAL_MS = 450;
 const uint8_t LED_BRIGHTNESS = 110;
+const uint16_t TOF_READ_INTERVAL_MS = 200;
+const uint16_t TOF_I2C_TIMEOUT_MS = 50;
 const bool MOTOR_A_FORWARD_PWM_INVERTED = false;
 const bool MOTOR_A_BACKWARD_PWM_INVERTED = false;
 const bool MOTOR_A_LEFT_TURN_PWM_INVERTED = false;
@@ -108,6 +141,24 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(
       margin-bottom: 14px;
     }
 
+    .camera-tools {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .camera-tools button {
+      min-height: 44px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      box-shadow: 0 4px 12px rgba(14, 165, 233, 0.22);
+    }
+
+    .cam-card.hidden {
+      display: none;
+    }
+
     .cam-card {
       background: #0b1f33;
       border-radius: 14px;
@@ -144,9 +195,9 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       grid-template-areas:
-        ". up ."
+        "upLeft up upRight"
         "left stop right"
-        ". down .";
+        "downLeft down downRight";
       gap: 12px;
       margin-bottom: 16px;
     }
@@ -183,9 +234,13 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(
     }
 
     #up { grid-area: up; }
+    #upLeft { grid-area: upLeft; }
+    #upRight { grid-area: upRight; }
     #left { grid-area: left; }
     #right { grid-area: right; }
     #down { grid-area: down; }
+    #downLeft { grid-area: downLeft; }
+    #downRight { grid-area: downRight; }
     #stop {
       grid-area: stop;
       background: var(--btn-stop);
@@ -201,6 +256,45 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(
       background: #f1f5f9;
       border-radius: 14px;
       padding: 12px;
+    }
+
+    .speed-box + .speed-box {
+      margin-top: 10px;
+    }
+
+    .tof-box {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px 14px;
+      align-items: center;
+      background: #e0f2fe;
+      border: 1px solid #bae6fd;
+      border-radius: 14px;
+      padding: 12px;
+      margin-bottom: 14px;
+    }
+
+    .tof-label {
+      color: #075985;
+      font-size: 0.85rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .tof-value {
+      color: #0b1f33;
+      font-size: 1.7rem;
+      font-weight: 800;
+      line-height: 1;
+      text-align: right;
+    }
+
+    .tof-status {
+      grid-column: 1 / -1;
+      min-height: 18px;
+      color: #334155;
+      font-size: 0.85rem;
     }
 
     .speed-row {
@@ -237,15 +331,19 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(
 <body>
   <main class="card">
     <h1>Robot Control</h1>
+    <section class="camera-tools">
+      <button type="button" id="toggleCam1">Hide CAM 1</button>
+      <button type="button" id="toggleCam2">Hide CAM 2</button>
+    </section>
     <section class="cams">
-      <article class="cam-card">
+      <article class="cam-card" id="cam1Card">
         <div class="cam-head">
           <span>CAM 1</span>
           <span class="cam-state">live</span>
         </div>
         <img src="http://192.168.4.20/stream" alt="Camera 1 stream" />
       </article>
-      <article class="cam-card">
+      <article class="cam-card" id="cam2Card">
         <div class="cam-head">
           <span>CAM 2</span>
           <span class="cam-state">live</span>
@@ -253,14 +351,23 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(
         <img src="http://192.168.4.21/stream" alt="Camera 2 stream" />
       </article>
     </section>
+    <section class="tof-box">
+      <span class="tof-label">Distance</span>
+      <span class="tof-value"><span id="tofValue">--</span> mm</span>
+      <span class="tof-status" id="tofStatus">VL53L0X starting...</span>
+    </section>
     <p class="hint">Hold a direction button to move. Release to stop.</p>
 
     <section class="pad">
+      <button type="button" id="upLeft">FWD LEFT</button>
       <button type="button" id="up">FORWARD</button>
+      <button type="button" id="upRight">FWD RIGHT</button>
       <button type="button" id="left">LEFT</button>
       <button type="button" id="stop">STOP</button>
       <button type="button" id="right">RIGHT</button>
+      <button type="button" id="downLeft">BACK LEFT</button>
       <button type="button" id="down">BACK</button>
+      <button type="button" id="downRight">BACK RIGHT</button>
     </section>
 
     <section class="speed-box">
@@ -271,22 +378,43 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(
       <input id="speed" name="value" type="range" min="0" max="255" value="180" />
     </section>
 
+    <section class="speed-box">
+      <div class="speed-row">
+        <span>Arc turn</span>
+        <span><strong id="arcValue">55</strong> / 255</span>
+      </div>
+      <input id="arcTurn" name="value" type="range" min="0" max="255" value="55" />
+    </section>
+
     <p class="footer">AP: Robot-Control (192.168.4.1) | Cam1: 192.168.4.20 | Cam2: 192.168.4.21 | Build: R2026-03-28-3</p>
   </main>
   <script>
     (function () {
       var speedInput = document.getElementById("speed");
       var speedValue = document.getElementById("speedValue");
+      var arcInput = document.getElementById("arcTurn");
+      var arcValue = document.getElementById("arcValue");
+      var tofValue = document.getElementById("tofValue");
+      var tofStatus = document.getElementById("tofStatus");
+      var cam1Card = document.getElementById("cam1Card");
+      var cam2Card = document.getElementById("cam2Card");
+      var toggleCam1Button = document.getElementById("toggleCam1");
+      var toggleCam2Button = document.getElementById("toggleCam2");
       var stopButton = document.getElementById("stop");
       var hasPointer = !!window.PointerEvent;
       var holdButtons = [
         { id: "up", dir: "forward" },
         { id: "down", dir: "backward" },
         { id: "left", dir: "left" },
-        { id: "right", dir: "right" }
+        { id: "right", dir: "right" },
+        { id: "upLeft", dir: "forward-left" },
+        { id: "upRight", dir: "forward-right" },
+        { id: "downLeft", dir: "backward-left" },
+        { id: "downRight", dir: "backward-right" }
       ];
       var activeDirection = "stop";
       var speedTimer = null;
+      var arcTimer = null;
       var activeHoldButtonId = null;
       var activePointerId = null;
       var ignoreMouseUntil = 0;
@@ -312,6 +440,47 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(
         if (selected) {
           selected.classList.add("active");
         }
+      }
+
+      function updateTof() {
+        if (!window.fetch || !tofValue || !tofStatus) {
+          return;
+        }
+
+        fetch("/tof", { cache: "no-store" })
+          .then(function (response) {
+            if (!response.ok) {
+              throw new Error("HTTP " + response.status);
+            }
+            return response.json();
+          })
+          .then(function (data) {
+            if (!data.ready) {
+              tofValue.textContent = "--";
+              tofStatus.textContent = "VL53L0X offline, I2C: " + (data.scan || "unknown") + " on SDA " + data.sda + " / SCL " + data.scl;
+              return;
+            }
+            if (data.valid) {
+              tofValue.textContent = data.mm;
+              tofStatus.textContent = "range status " + data.status + " on SDA " + data.sda + " / SCL " + data.scl;
+            } else {
+              tofValue.textContent = "--";
+              tofStatus.textContent = "out of range";
+            }
+          })
+          .catch(function () {
+            tofValue.textContent = "--";
+            tofStatus.textContent = "no sensor data";
+          });
+      }
+
+      function setCameraVisible(card, button, label, visible) {
+        if (!card || !button) {
+          return;
+        }
+        card.classList.toggle("hidden", !visible);
+        button.textContent = (visible ? "Hide " : "Show ") + label;
+        button.classList.toggle("active", !visible);
       }
 
       function move(dir, buttonId) {
@@ -452,6 +621,32 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(
         });
       }
 
+      if (arcInput) {
+        arcInput.addEventListener("input", function () {
+          if (arcValue) {
+            arcValue.textContent = arcInput.value;
+          }
+          if (arcTimer) {
+            clearTimeout(arcTimer);
+          }
+          arcTimer = setTimeout(function () {
+            send("/arc?value=" + encodeURIComponent(arcInput.value));
+          }, 120);
+        });
+      }
+
+      if (toggleCam1Button) {
+        toggleCam1Button.addEventListener("click", function () {
+          setCameraVisible(cam1Card, toggleCam1Button, "CAM 1", cam1Card.classList.contains("hidden"));
+        });
+      }
+
+      if (toggleCam2Button) {
+        toggleCam2Button.addEventListener("click", function () {
+          setCameraVisible(cam2Card, toggleCam2Button, "CAM 2", cam2Card.classList.contains("hidden"));
+        });
+      }
+
       if (hasPointer) {
         document.addEventListener("pointerup", function (e) {
           if (activePointerId === e.pointerId) {
@@ -486,6 +681,10 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(
       });
 
       setActiveButton("stop");
+      setCameraVisible(cam1Card, toggleCam1Button, "CAM 1", true);
+      setCameraVisible(cam2Card, toggleCam2Button, "CAM 2", true);
+      updateTof();
+      setInterval(updateTof, 250);
     })();
   </script>
 </body>
@@ -532,6 +731,14 @@ uint8_t maybeInvertPwm(uint8_t pwm, bool inverted) {
   return inverted ? static_cast<uint8_t>(255 - pwm) : pwm;
 }
 
+uint8_t applyArcInnerSpeed(uint8_t baseSpeed) {
+  uint8_t pwm = applyTrim(baseSpeed, arcTurnInnerTrim);
+  if (arcTurnInnerTrim > 0 && pwm > 0 && pwm < ARC_TURN_MIN_INNER_PWM) {
+    return min(baseSpeed, ARC_TURN_MIN_INNER_PWM);
+  }
+  return pwm;
+}
+
 void setAtomLed(uint8_t r, uint8_t g, uint8_t b) {
   uint8_t rr = static_cast<uint8_t>((static_cast<uint16_t>(r) * LED_BRIGHTNESS) / 255);
   uint8_t gg = static_cast<uint8_t>((static_cast<uint16_t>(g) * LED_BRIGHTNESS) / 255);
@@ -556,6 +763,16 @@ void applyDirectionLed(MotionDirection dir) {
     case DIR_RIGHT:
       standbyBlinkOn = false;
       setAtomLed(255, 120, 0);    // Orange
+      break;
+    case DIR_FORWARD_LEFT:
+    case DIR_FORWARD_RIGHT:
+      standbyBlinkOn = false;
+      setAtomLed(0, 180, 255);    // Cyan
+      break;
+    case DIR_BACKWARD_LEFT:
+    case DIR_BACKWARD_RIGHT:
+      standbyBlinkOn = false;
+      setAtomLed(255, 0, 120);    // Pink
       break;
     case DIR_STOP:
     default:
@@ -583,6 +800,26 @@ void updateStandbyLedBlink() {
     setAtomLed(0, 0, 255);
   } else {
     setAtomLed(0, 0, 0);
+  }
+}
+
+void updateTofReading() {
+  if (!tofReady) {
+    return;
+  }
+
+  unsigned long now = millis();
+  if (now - lastTofReadMs < TOF_READ_INTERVAL_MS) {
+    return;
+  }
+  lastTofReadMs = now;
+
+  VL53L0X_RangingMeasurementData_t measure;
+  tofSensor.rangingTest(&measure, false);
+  lastTofStatus = measure.RangeStatus;
+  lastTofValid = (measure.RangeStatus != 4);
+  if (lastTofValid) {
+    lastTofMm = measure.RangeMilliMeter;
   }
 }
 
@@ -645,6 +882,42 @@ void applyDirection(MotionDirection dir) {
         fromStop
       );
       break;
+    case DIR_FORWARD_LEFT:
+      moveWithBoost(
+        1,
+        maybeInvertPwm(applyArcInnerSpeed(motorSpeed), MOTOR_A_FORWARD_PWM_INVERTED),
+        1,
+        applyTrim(motorSpeed, MOTOR_B_FORWARD_TRIM),
+        fromStop
+      );
+      break;
+    case DIR_FORWARD_RIGHT:
+      moveWithBoost(
+        1,
+        maybeInvertPwm(applyTrim(motorSpeed, MOTOR_A_FORWARD_TRIM), MOTOR_A_FORWARD_PWM_INVERTED),
+        1,
+        applyArcInnerSpeed(motorSpeed),
+        fromStop
+      );
+      break;
+    case DIR_BACKWARD_LEFT:
+      moveWithBoost(
+        -1,
+        maybeInvertPwm(applyTrim(motorSpeed, MOTOR_A_BACKWARD_TRIM), MOTOR_A_BACKWARD_PWM_INVERTED),
+        -1,
+        applyArcInnerSpeed(motorSpeed),
+        fromStop
+      );
+      break;
+    case DIR_BACKWARD_RIGHT:
+      moveWithBoost(
+        -1,
+        maybeInvertPwm(applyArcInnerSpeed(motorSpeed), MOTOR_A_BACKWARD_PWM_INVERTED),
+        -1,
+        applyTrim(motorSpeed, MOTOR_B_BACKWARD_TRIM),
+        fromStop
+      );
+      break;
     case DIR_STOP:
     default:
       setMotorA(0, 0);
@@ -697,6 +970,14 @@ void handleMove() {
     applyDirection(DIR_LEFT);
   } else if (dir == "right") {
     applyDirection(DIR_RIGHT);
+  } else if (dir == "forward-left") {
+    applyDirection(DIR_FORWARD_LEFT);
+  } else if (dir == "forward-right") {
+    applyDirection(DIR_FORWARD_RIGHT);
+  } else if (dir == "backward-left") {
+    applyDirection(DIR_BACKWARD_LEFT);
+  } else if (dir == "backward-right") {
+    applyDirection(DIR_BACKWARD_RIGHT);
   } else if (dir == "stop") {
     applyDirection(DIR_STOP);
   } else {
@@ -733,8 +1014,105 @@ void handleSpeed() {
   server.send(200, "text/plain", String(motorSpeed));
 }
 
+void handleArcTurn() {
+  if (!server.hasArg("value")) {
+    server.send(400, "text/plain", "Missing value");
+    return;
+  }
+
+  int value = constrain(server.arg("value").toInt(), 0, 255);
+  arcTurnInnerTrim = static_cast<uint8_t>(value);
+
+  if (currentDirection == DIR_FORWARD_LEFT ||
+      currentDirection == DIR_FORWARD_RIGHT ||
+      currentDirection == DIR_BACKWARD_LEFT ||
+      currentDirection == DIR_BACKWARD_RIGHT) {
+    applyDirection(currentDirection);
+  }
+
+  server.send(200, "text/plain", String(arcTurnInnerTrim));
+}
+
+void handleTof() {
+  server.sendHeader("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
+
+  if (!tofReady) {
+    String json = String("{\"ready\":false,\"valid\":false,\"mm\":0,\"status\":-1,\"scan\":\"") + i2cScanResult +
+                  "\",\"sda\":" + String(activeTofSda) +
+                  ",\"scl\":" + String(activeTofScl) + "}";
+    server.send(200, "application/json", json);
+    return;
+  }
+
+  String json = String("{\"ready\":true,\"valid\":") + (lastTofValid ? "true" : "false") +
+                ",\"mm\":" + String(lastTofValid ? lastTofMm : 0) +
+                ",\"status\":" + String(lastTofStatus) +
+                ",\"scan\":\"" + i2cScanResult +
+                "\",\"sda\":" + String(activeTofSda) +
+                ",\"scl\":" + String(activeTofScl) + "}";
+  server.send(200, "application/json", json);
+}
+
+String scanI2cBus() {
+  String result = "";
+  uint8_t count = 0;
+
+  for (uint8_t address = 1; address < 127; address++) {
+    Wire.beginTransmission(address);
+    uint8_t error = Wire.endTransmission();
+    if (error == 0) {
+      if (count > 0) {
+        result += ",";
+      }
+      if (address < 16) {
+        result += "0x0";
+      } else {
+        result += "0x";
+      }
+      result += String(address, HEX);
+      count++;
+    }
+  }
+
+  if (count == 0) {
+    return "none";
+  }
+  return result;
+}
+
+bool i2cScanHasAddress(const String &scanResult, const char *address) {
+  return scanResult.indexOf(address) >= 0;
+}
+
 void setup() {
   Serial.begin(115200);
+
+  Wire.begin(TOF_PRIMARY_SDA, TOF_PRIMARY_SCL);
+  Wire.setTimeOut(TOF_I2C_TIMEOUT_MS);
+  i2cScanResult = scanI2cBus();
+  activeTofSda = TOF_PRIMARY_SDA;
+  activeTofScl = TOF_PRIMARY_SCL;
+  Serial.printf("I2C scan on SDA=%d SCL=%d: %s\n", activeTofSda, activeTofScl, i2cScanResult.c_str());
+
+  if (!i2cScanHasAddress(i2cScanResult, "0x29")) {
+    Wire.end();
+    Wire.begin(TOF_ALT_SDA, TOF_ALT_SCL);
+    Wire.setTimeOut(TOF_I2C_TIMEOUT_MS);
+    String altScanResult = scanI2cBus();
+    Serial.printf("I2C scan on SDA=%d SCL=%d: %s\n", TOF_ALT_SDA, TOF_ALT_SCL, altScanResult.c_str());
+    if (i2cScanHasAddress(altScanResult, "0x29")) {
+      activeTofSda = TOF_ALT_SDA;
+      activeTofScl = TOF_ALT_SCL;
+      i2cScanResult = altScanResult;
+    } else {
+      Wire.end();
+      Wire.begin(TOF_PRIMARY_SDA, TOF_PRIMARY_SCL);
+      Wire.setTimeOut(TOF_I2C_TIMEOUT_MS);
+    }
+  }
+
+  tofReady = tofSensor.begin(0x29, false, &Wire);
+  Serial.printf("VL53L0X on SDA=%d SCL=%d: %s\n", activeTofSda, activeTofScl, tofReady ? "OK" : "NOT FOUND");
 
   pinMode(PWMA, OUTPUT);
   pinMode(AIN1, OUTPUT);
@@ -754,6 +1132,8 @@ void setup() {
   server.on("/", handleRoot);
   server.on("/move", HTTP_GET, handleMove);
   server.on("/speed", HTTP_GET, handleSpeed);
+  server.on("/arc", HTTP_GET, handleArcTurn);
+  server.on("/tof", HTTP_GET, handleTof);
   server.on("/generate_204", HTTP_GET, handleCaptiveProbe);       // Android
   server.on("/gen_204", HTTP_GET, handleCaptiveProbe);            // Android alt
   server.on("/hotspot-detect.html", HTTP_GET, handleCaptiveProbe); // iOS/macOS
@@ -776,4 +1156,5 @@ void loop() {
   dnsServer.processNextRequest();
   server.handleClient();
   updateStandbyLedBlink();
+  updateTofReading();
 }

@@ -1,0 +1,193 @@
+﻿{
+    "client_id":  "d1efb510-78d2-4b80-8b4d-36d4272d0c89",
+    "prompt":  {
+                   "3":  {
+                             "inputs":  {
+                                            "denoise":  1,
+                                            "seed":  42547343880725,
+                                            "positive":  [
+                                                             "65",
+                                                             0
+                                                         ],
+                                            "sampler_name":  "euler",
+                                            "latent_image":  [
+                                                                 "66",
+                                                                 0
+                                                             ],
+                                            "negative":  [
+                                                             "65",
+                                                             1
+                                                         ],
+                                            "cfg":  7.5,
+                                            "model":  [
+                                                          "70",
+                                                          0
+                                                      ],
+                                            "steps":  20,
+                                            "scheduler":  "normal"
+                                        },
+                             "class_type":  "KSampler"
+                         },
+                   "51":  {
+                              "inputs":  {
+                                             "clip_vision":  [
+                                                                 "54",
+                                                                 1
+                                                             ],
+                                             "crop":  "none",
+                                             "image":  [
+                                                           "56",
+                                                           0
+                                                       ]
+                                         },
+                              "class_type":  "CLIPVisionEncode"
+                          },
+                   "54":  {
+                              "inputs":  {
+                                             "ckpt_name":  "hunyuan3d-dit-v2-mv_fp16.safetensors"
+                                         },
+                              "class_type":  "ImageOnlyCheckpointLoader"
+                          },
+                   "56":  {
+                              "inputs":  {
+                                             "image":  "Model_all_front.png"
+                                         },
+                              "class_type":  "LoadImage"
+                          },
+                   "57":  {
+                              "inputs":  {
+                                             "image":  "Model_all_left.png"
+                                         },
+                              "class_type":  "LoadImage"
+                          },
+                   "58":  {
+                              "inputs":  {
+                                             "clip_vision":  [
+                                                                 "54",
+                                                                 1
+                                                             ],
+                                             "crop":  "none",
+                                             "image":  [
+                                                           "57",
+                                                           0
+                                                       ]
+                                         },
+                              "class_type":  "CLIPVisionEncode"
+                          },
+                   "61":  {
+                              "inputs":  {
+                                             "num_chunks":  8000,
+                                             "octree_resolution":  256,
+                                             "samples":  [
+                                                             "3",
+                                                             0
+                                                         ],
+                                             "vae":  [
+                                                         "54",
+                                                         2
+                                                     ]
+                                         },
+                              "class_type":  "VAEDecodeHunyuan3D"
+                          },
+                   "65":  {
+                              "inputs":  {
+                                             "left":  [
+                                                          "58",
+                                                          0
+                                                      ],
+                                             "back":  [
+                                                          "81",
+                                                          0
+                                                      ],
+                                             "front":  [
+                                                           "51",
+                                                           0
+                                                       ],
+                                             "right":  [
+                                                           "86",
+                                                           0
+                                                       ]
+                                         },
+                              "class_type":  "Hunyuan3Dv2ConditioningMultiView"
+                          },
+                   "66":  {
+                              "inputs":  {
+                                             "resolution":  2048,
+                                             "batch_size":  1
+                                         },
+                              "class_type":  "EmptyLatentHunyuan3Dv2"
+                          },
+                   "70":  {
+                              "inputs":  {
+                                             "model":  [
+                                                           "54",
+                                                           0
+                                                       ],
+                                             "shift":  1.0000000000000002
+                                         },
+                              "class_type":  "ModelSamplingAuraFlow"
+                          },
+                   "80":  {
+                              "inputs":  {
+                                             "image":  "Model_all_back.png"
+                                         },
+                              "class_type":  "LoadImage"
+                          },
+                   "81":  {
+                              "inputs":  {
+                                             "clip_vision":  [
+                                                                 "54",
+                                                                 1
+                                                             ],
+                                             "crop":  "none",
+                                             "image":  [
+                                                           "80",
+                                                           0
+                                                       ]
+                                         },
+                              "class_type":  "CLIPVisionEncode"
+                          },
+                   "85":  {
+                              "inputs":  {
+                                             "image":  "Model_all_right.png"
+                                         },
+                              "class_type":  "LoadImage"
+                          },
+                   "86":  {
+                              "inputs":  {
+                                             "clip_vision":  [
+                                                                 "54",
+                                                                 1
+                                                             ],
+                                             "crop":  "none",
+                                             "image":  [
+                                                           "85",
+                                                           0
+                                                       ]
+                                         },
+                              "class_type":  "CLIPVisionEncode"
+                          },
+                   "82":  {
+                              "inputs":  {
+                                             "voxel":  [
+                                                           "61",
+                                                           0
+                                                       ],
+                                             "threshold":  0.6,
+                                             "algorithm":  "surface net"
+                                         },
+                              "class_type":  "VoxelToMesh"
+                          },
+                   "83":  {
+                              "inputs":  {
+                                             "filename_prefix":  "mesh/ComfyUI_4view",
+                                             "mesh":  [
+                                                          "82",
+                                                          0
+                                                      ],
+                                             "image":  ""
+                                         },
+                              "class_type":  "SaveGLB"
+                          }
+               }
+}

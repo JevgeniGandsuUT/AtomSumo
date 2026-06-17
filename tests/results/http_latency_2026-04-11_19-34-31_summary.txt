@@ -1,0 +1,6 @@
+base_url=http://192.168.4.1
+count=120
+median_ms=31.538
+p95_ms=53.042
+max_ms=68.883
+notes=speed set to 0 before test to avoid uncontrolled movement while measuring HTTP command latency

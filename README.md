@@ -1,4 +1,4 @@
-# ATOM Sumo
+﻿# ATOM Sumo
 
 `ATOM Sumo` is a SMARS-inspired sumo robot prototype for the University of Tartu prototyping course.
 
@@ -7,24 +7,32 @@ The project combines:
 - `2 x M5 AtomS3R-CAM` camera nodes;
 - `2S 18650` battery power;
 - `TB6612FNG` motor driver;
-- `N20 6V` drive motors;
+- `4 x N20 6V` drive motors, wired as left/right parallel motor pairs;
 - a browser-based control interface over the robot's own Wi-Fi access point.
 
 The long-term goal is one reliable working prototype plus enough documentation to support small-batch replication before the arena event.
 
 ## Current architecture
 
-- Main controller firmware: [`sketch_mar21a/sketch_mar21a.ino`](sketch_mar21a/sketch_mar21a.ino)
-- Camera firmware: [`cam/sketch_jan17a.ino`](cam/sketch_jan17a.ino)
-- Power concept: [`docs/power_scheme.md`](docs/power_scheme.md)
-- Electrical block diagram: [`drawio/power_tree.drawio`](drawio/power_tree.drawio)
-- System block diagram: [`drawio/system_block.drawio`](drawio/system_block.drawio)
-- Formal V1 specification: [`docs/V1_specification.md`](docs/V1_specification.md)
-- Milestone plan: [`docs/VERSTAPOSTID_PLAN.md`](docs/VERSTAPOSTID_PLAN.md)
+- Main controller firmware: [`firmware/main/main.ino`](firmware/main/main.ino)
+- Camera firmware: [`firmware/camera/sketch_jan17a/sketch_jan17a.ino`](firmware/camera/sketch_jan17a/sketch_jan17a.ino)
+- Documentation index: [`docs/README.md`](docs/README.md)
+- Power concept: [`docs/specification/power_scheme.md`](docs/specification/power_scheme.md)
+- Electrical block diagram: [`hardware/diagrams/power_tree.drawio`](hardware/diagrams/power_tree.drawio)
+- System block diagram: [`hardware/diagrams/system_block.drawio`](hardware/diagrams/system_block.drawio)
+- PCB package: [`hardware/pcb/README.md`](hardware/pcb/README.md)
+- Formal V1 specification: [`docs/specification/V1_specification.md`](docs/specification/V1_specification.md)
+- Requirements tracker Excel: [`docs/milestones/VERSTAPOST_REQUIREMENTS_TRACKER.xlsx`](docs/milestones/VERSTAPOST_REQUIREMENTS_TRACKER.xlsx)
+- Technical comparison: [`docs/specification/TECH_COMPARISON.md`](docs/specification/TECH_COMPARISON.md)
+- Estonian comparative analysis: [`docs/analysis/Vordlev_analyys.docx`](docs/analysis/Vordlev_analyys.docx), [`docs/analysis/Vordlev_analyys_summary.md`](docs/analysis/Vordlev_analyys_summary.md)
+- Full test-results notebook: [`tests/notebooks/test_results_analysis.ipynb`](tests/notebooks/test_results_analysis.ipynb)
+- Notebook launcher: [`tools/RUN_TEST_RESULTS_NOTEBOOK.ps1`](tools/RUN_TEST_RESULTS_NOTEBOOK.ps1)
+- Milestone plan: [`docs/milestones/VERSTAPOSTID_PLAN.md`](docs/milestones/VERSTAPOSTID_PLAN.md)
+- Original Verstapost brief images: [`docs/assets/briefs`](docs/assets/briefs)
 
 Current hardware baseline:
-- differential drive with `2` powered wheels and `2` passive wheels;
-- `6.0V` motor rail for `N20 6V` motors;
+- differential `4WD` drive with `2` motors wired in parallel on each side;
+- `6.0V` motor rail for `4 x N20 6V` motors;
 - separate `5.0V` logic rail for controller, cameras, and sensors;
 - robot Wi-Fi AP `Robot-Control` with browser control UI.
 
@@ -35,115 +43,148 @@ Already available in the repository:
 - working `AtomS3R-CAM` streaming sketch;
 - V1 specification and BOM;
 - power tree and PCB artifacts;
-- first latency measurements and analysis notebook;
-- CAD for the chassis baseline.
+- latency, movement, ToF, and brownout measurements with executed analysis notebooks;
+- CAD for the baseline chassis, functional enclosure, and real Fusion 360 robot assembly.
 
 Important current limitation:
-- full mechanical `motor test` is still pending because the chassis is not yet fully assembled.
+- final enclosure/endurance validation is still pending; the robot has movement CSVs, but heat, impact, battery-service, and repeated match-like tests still need measured tables.
+
+## Submission tracker
+
+The main submission document is:
+
+- [`docs/milestones/VERSTAPOST_REQUIREMENTS_TRACKER.xlsx`](docs/milestones/VERSTAPOST_REQUIREMENTS_TRACKER.xlsx)
+
+It lists all Verstapost 1-5 requirements in order, marks whether each item is complete, and links to the evidence files.
 
 ## Key results
 
-HTTP control latency measurements are stored in [`analysis/results`](analysis/results).
+HTTP control latency measurements are stored in [`tests/results`](tests/results).
 
 Most useful current runs:
-- before motor A fix: [`http_latency_2026-04-11_18-28-33.csv`](analysis/results/http_latency_2026-04-11_18-28-33.csv)
-- after motor A fix at `speed=0`: [`http_latency_2026-04-11_19-34-31.csv`](analysis/results/http_latency_2026-04-11_19-34-31.csv)
-- after fix at `speed=180`: [`http_latency_2026-04-11_19-38-18_medium_speed.csv`](analysis/results/http_latency_2026-04-11_19-38-18_medium_speed.csv)
+- before motor A fix: [`http_latency_2026-04-11_18-28-33.csv`](tests/results/http_latency_2026-04-11_18-28-33.csv)
+- after motor A fix at `speed=0`: [`http_latency_2026-04-11_19-34-31.csv`](tests/results/http_latency_2026-04-11_19-34-31.csv)
+- after fix at `speed=180`: [`http_latency_2026-04-11_19-38-18_medium_speed.csv`](tests/results/http_latency_2026-04-11_19-38-18_medium_speed.csv)
 
 Summary:
 - `speed=0` after fix: median `31.538 ms`, p95 `53.042 ms`, max `68.883 ms`
 - `speed=180`: median `87.373 ms`, p95 `158.018 ms`, max `186.038 ms`
 
 Detailed write-up:
-- [`docs/latency_test_result.md`](docs/latency_test_result.md)
-- [`analysis/http_latency_analysis.ipynb`](analysis/http_latency_analysis.ipynb)
+- [`docs/testing/latency_test_result.md`](docs/testing/latency_test_result.md)
+- [`tests/notebooks/http_latency_analysis.ipynb`](tests/notebooks/http_latency_analysis.ipynb)
+- [`tests/notebooks/test_results_analysis.ipynb`](tests/notebooks/test_results_analysis.ipynb)
+
+## Milestone evidence
+
+Detailed evidence is linked from the Excel tracker and from the documentation index. The most important supporting areas are:
+
+- [`docs/specification`](docs/specification) - specification, BOM, power scheme, and comparison analysis.
+- [`docs/testing`](docs/testing) - test plan and test protocols.
+- [`tests/results`](tests/results) - CSV measurement data.
+- [`tests/notebooks`](tests/notebooks) - analysis notebooks.
+- [`firmware`](firmware) - main controller and camera firmware.
+- [`hardware`](hardware) - CAD, PCB, and diagrams.
 
 ## Repository structure
 
 ### Firmware
 
-- [`sketch_mar21a/`](sketch_mar21a/)  
+- [`firmware/main/`](firmware/main)  
   Main robot controller firmware: Wi-Fi AP, web UI, motor control, speed control, command handling.
 
-- [`cam/`](cam/)  
+- [`firmware/camera/`](firmware/camera)  
   Firmware for the `M5 AtomS3R-CAM` nodes that provide MJPEG video streams.
+
+### Tools
+
+- [`tools/`](tools)  
+  Double-click PowerShell launchers for measurement runs and notebook regeneration.
 
 ### Documentation
 
-- [`docs/V1_specification.md`](docs/V1_specification.md)  
-  Formal system specification for the first milestone.
+- [`docs/README.md`](docs/README.md)  
+  Documentation index and fastest way into the Excel tracker and evidence files.
 
-- [`docs/VERSTAPOSTID_PLAN.md`](docs/VERSTAPOSTID_PLAN.md)  
-  Working milestone checklist and project progress notes.
+- [`docs/specification/`](docs/specification)  
+  System specification, BOM, power scheme, and technical comparison.
 
-- [`docs/BOM.csv`](docs/BOM.csv)  
-  Reference bill of materials for the selected `2S 18650` robot build.
+- [`docs/guides/`](docs/guides)  
+  Assembly, flashing, and print-setting guides.
 
-- [`docs/power_scheme.md`](docs/power_scheme.md)  
-  Fixed power architecture for the current robot revision.
+- [`docs/testing/`](docs/testing)  
+  Test plan, movement/sensor protocol, and latency write-up.
 
-- [`docs/test_plan.md`](docs/test_plan.md)  
-  Practical verification plan for bench tests, camera tests, and current pending integration tests.
+- [`docs/milestones/`](docs/milestones)  
+  Main Excel tracker, requirements matrix, and milestone status.
 
-- [`docs/latency_test_result.md`](docs/latency_test_result.md)  
-  Human-readable latency test interpretation.
+- [`docs/assets/`](docs/assets)  
+  Milestone brief images and order screenshots.
 
-- [`docs/Order1.png`](docs/Order1.png), [`docs/Order2.png`](docs/Order2.png)  
-  Order evidence for purchased components.
+### Tests and measurements
 
-### Analysis
+- [`tests/README.md`](tests/README.md)  
+  Index for executable tests, measurement CSV files, and notebooks.
 
-- [`analysis/http_latency_test.py`](analysis/http_latency_test.py)  
-  Script used to measure HTTP request-response latency to the robot.
+- [`tests/scripts/`](tests/scripts)  
+  Python scripts used to collect latency, brownout, and ToF accuracy data.
 
-- [`analysis/http_latency_analysis.ipynb`](analysis/http_latency_analysis.ipynb)  
-  Jupyter notebook with tables, graphs, and interpretation for the available latency runs.
+- [`tests/notebooks/`](tests/notebooks)  
+  Jupyter notebooks with tables, graphs, and interpretation.
 
-- [`analysis/results/`](analysis/results/)  
+- [`tests/results/`](tests/results)  
   Raw CSV files and summary text files from executed tests.
 
 ### Electronics and diagrams
 
-- [`drawio/power_tree.drawio`](drawio/power_tree.drawio)  
+- [`hardware/diagrams/power_tree.drawio`](hardware/diagrams/power_tree.drawio)  
   Editable draw.io electrical block diagram.
 
-- [`drawio/system_block.drawio`](drawio/system_block.drawio)  
+- [`hardware/diagrams/system_block.drawio`](hardware/diagrams/system_block.drawio)  
   Editable top-level system architecture diagram.
 
-- [`PCB/`](PCB/)  
-  PCB screenshots, schematic exports, and Gerber archives.
+- [`hardware/pcb/`](hardware/pcb)  
+  PCB screenshots, schematic/layout source exports, 3D view, and Gerber archives. Start with [`hardware/pcb/README.md`](hardware/pcb/README.md).
 
 ### Mechanical
 
-- [`cad/chassis_n20.scad`](cad/chassis_n20.scad)  
+- [`hardware/cad/ver1/chassis_n20.scad`](hardware/cad/ver1/chassis_n20.scad)  
   Parametric OpenSCAD chassis model.
 
-- [`cad/chassis_n20.stl`](cad/chassis_n20.stl)  
+- [`hardware/cad/ver1/chassis_n20.stl`](hardware/cad/ver1/chassis_n20.stl)  
   Exported printable chassis geometry.
+
+- [`hardware/cad/ver3/`](hardware/cad/ver3)  
+  Functional enclosure/body models and rendered views.
+
+- [`hardware/cad/real/`](hardware/cad/real)  
+  Real Fusion 360 robot assembly and parts, including body, shell, top cover, battery pack, wheels, N20 motor reference, PCB body, and M5 Atom placement.
 
 ### Media
 
-- [`video/MicrosoftTeams-video.mp4`](video/MicrosoftTeams-video.mp4)  
+- [`media/video/MicrosoftTeams-video.mp4`](media/video/MicrosoftTeams-video.mp4)  
   Demo evidence showing camera streaming.
 
 ## Recommended reading order
 
 If you are opening this repository for the first time, start here:
 
-1. [`docs/V1_specification.md`](docs/V1_specification.md)
-2. [`docs/VERSTAPOSTID_PLAN.md`](docs/VERSTAPOSTID_PLAN.md)
-3. [`docs/BOM.csv`](docs/BOM.csv)
-4. [`docs/power_scheme.md`](docs/power_scheme.md)
-5. [`docs/test_plan.md`](docs/test_plan.md)
-6. [`sketch_mar21a/sketch_mar21a.ino`](sketch_mar21a/sketch_mar21a.ino)
-7. [`cam/sketch_jan17a.ino`](cam/sketch_jan17a.ino)
-8. [`analysis/http_latency_analysis.ipynb`](analysis/http_latency_analysis.ipynb)
+1. [`docs/specification/V1_specification.md`](docs/specification/V1_specification.md)
+2. [`docs/milestones/VERSTAPOST_REQUIREMENTS_TRACKER.xlsx`](docs/milestones/VERSTAPOST_REQUIREMENTS_TRACKER.xlsx)
+3. [`docs/specification/TECH_COMPARISON.md`](docs/specification/TECH_COMPARISON.md)
+4. [`docs/milestones/VERSTAPOSTID_PLAN.md`](docs/milestones/VERSTAPOSTID_PLAN.md)
+5. [`docs/specification/BOM.csv`](docs/specification/BOM.csv)
+6. [`docs/specification/power_scheme.md`](docs/specification/power_scheme.md)
+7. [`docs/testing/test_plan.md`](docs/testing/test_plan.md)
+8. [`firmware/main/main.ino`](firmware/main/main.ino)
+9. [`firmware/camera/sketch_jan17a/sketch_jan17a.ino`](firmware/camera/sketch_jan17a/sketch_jan17a.ino)
+10. [`tests/notebooks/http_latency_analysis.ipynb`](tests/notebooks/http_latency_analysis.ipynb)
 
 ## Next project steps
 
 Planned next technical steps:
-- assemble the rolling chassis;
-- integrate `VL53L0X` into the controller firmware;
-- complete physical motor characterization;
-- validate the `2S 3A` BMS under real motor startup load;
-- continue toward V2 and V3 integration milestones.
+- calibrate or explain the measured `VL53L0X` offset;
+- re-run the brownout test with Cam1/Cam2 confirmed online;
+- add color repeatability and tap-drive accuracy measurements;
+- complete enclosure heat/impact/service/endurance tests;
+- add final assembly photos and measured validation tables.

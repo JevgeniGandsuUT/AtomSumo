@@ -1,0 +1,8 @@
+base_url=http://192.168.4.1
+count=120
+speed_value=180
+delay_s=0.05
+median_ms=87.373
+p95_ms=158.018
+max_ms=186.038
+notes=measures HTTP request-response latency while alternating /move?dir=forward and /move?dir=stop

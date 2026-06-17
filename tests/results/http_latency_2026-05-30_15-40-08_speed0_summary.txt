@@ -1,0 +1,4 @@
+count=120
+median_ms=18.565
+p95_ms=42.344
+max_ms=73.677

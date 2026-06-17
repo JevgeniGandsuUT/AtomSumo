@@ -1,0 +1,178 @@
+{
+  "3": {
+    "inputs": {
+      "seed": 42547343880724,
+      "steps": 20,
+      "cfg": 7.5,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+        "70",
+        0
+      ],
+      "positive": [
+        "65",
+        0
+      ],
+      "negative": [
+        "65",
+        1
+      ],
+      "latent_image": [
+        "66",
+        0
+      ]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "KSampler"
+    }
+  },
+  "51": {
+    "inputs": {
+      "crop": "none",
+      "clip_vision": [
+        "54",
+        1
+      ],
+      "image": [
+        "56",
+        0
+      ]
+    },
+    "class_type": "CLIPVisionEncode",
+    "_meta": {
+      "title": "Кодирование видения CLIP"
+    }
+  },
+  "54": {
+    "inputs": {
+      "ckpt_name": "hunyuan3d-dit-v2-mv_fp16.safetensors"
+    },
+    "class_type": "ImageOnlyCheckpointLoader",
+    "_meta": {
+      "title": "Загрузчик checkpoint только для изображения (модель img2vid)"
+    }
+  },
+  "56": {
+    "inputs": {
+      "image": "Model_all_front.png"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "Загрузить изображение"
+    }
+  },
+  "61": {
+    "inputs": {
+      "num_chunks": 8000,
+      "octree_resolution": 256,
+      "samples": [
+        "3",
+        0
+      ],
+      "vae": [
+        "54",
+        2
+      ]
+    },
+    "class_type": "VAEDecodeHunyuan3D",
+    "_meta": {
+      "title": "VAEDecodeHunyuan3D"
+    }
+  },
+  "65": {
+    "inputs": {
+      "front": [
+        "51",
+        0
+      ],
+      "back": [
+        "81",
+        0
+      ]
+    },
+    "class_type": "Hunyuan3Dv2ConditioningMultiView",
+    "_meta": {
+      "title": "Hunyuan3Dv2ConditioningMultiView"
+    }
+  },
+  "66": {
+    "inputs": {
+      "resolution": 2048,
+      "batch_size": 1
+    },
+    "class_type": "EmptyLatentHunyuan3Dv2",
+    "_meta": {
+      "title": "EmptyLatentHunyuan3Dv2"
+    }
+  },
+  "70": {
+    "inputs": {
+      "shift": 1.0000000000000002,
+      "model": [
+        "54",
+        0
+      ]
+    },
+    "class_type": "ModelSamplingAuraFlow",
+    "_meta": {
+      "title": "Выборка модели AuraFlow"
+    }
+  },
+  "80": {
+    "inputs": {
+      "image": "Model_all_back.png"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "Загрузить изображение"
+    }
+  },
+  "81": {
+    "inputs": {
+      "crop": "none",
+      "clip_vision": [
+        "54",
+        1
+      ],
+      "image": [
+        "80",
+        0
+      ]
+    },
+    "class_type": "CLIPVisionEncode",
+    "_meta": {
+      "title": "Кодирование видения CLIP"
+    }
+  },
+  "82": {
+    "inputs": {
+      "algorithm": "surface net",
+      "threshold": 0.6,
+      "voxel": [
+        "61",
+        0
+      ]
+    },
+    "class_type": "VoxelToMesh",
+    "_meta": {
+      "title": "VoxelToMesh"
+    }
+  },
+  "83": {
+    "inputs": {
+      "filename_prefix": "mesh/ComfyUI",
+      "image": "",
+      "mesh": [
+        "82",
+        0
+      ]
+    },
+    "class_type": "SaveGLB",
+    "_meta": {
+      "title": "SaveGLB"
+    }
+  }
+}

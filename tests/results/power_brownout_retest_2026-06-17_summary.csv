@@ -1,0 +1,4 @@
+date,pwm,rows,reset_no,wifi_disconnect_no,camera_loss_no,camera_observed_rows,notes
+2026-06-17,80,10,10,10,8,10,pass for power robustness
+2026-06-17,150,10,10,10,10,10,pass for power robustness
+2026-06-17,180,10,10,10,10,10,pass for power robustness

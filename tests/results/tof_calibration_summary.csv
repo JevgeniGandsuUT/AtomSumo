@@ -1,0 +1,3 @@
+range_mm,model,mean_abs_corrected_error_mm,max_abs_corrected_error_mm,valid_for_control,notes
+50-300,actual_mm = 1.1202 * measured_mm - 85.72,11.7,23.5,yes,"Use for short/medium obstacle logic only; retest after final mounting"
+500,not reliable in current dataset,,,no,"500 mm readings vary strongly and should not be used for precise decisions without retest"

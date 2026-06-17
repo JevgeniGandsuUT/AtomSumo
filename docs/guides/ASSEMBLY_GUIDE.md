@@ -4,7 +4,8 @@ This is the current assembly guide for the `ATOM Sumo` prototype.
 
 Status:
 - repository assembly documentation is present as a technical checklist;
-- final photo-based assembly documentation is still required for a true production-ready release.
+- current photo evidence is now indexed in [docs/assets/photos](../assets/photos);
+- final service/endurance measurements are still required for a true production-ready release.
 
 ## Required Reference Files
 
@@ -12,8 +13,7 @@ Status:
 - [power_scheme.md](../specification/power_scheme.md)
 - [hardware/pcb/README.md](../../hardware/pcb/README.md)
 - [hardware/cad/real/README.md](../../hardware/cad/real/README.md)
-- [hardware/cad/ver1](../../hardware/cad/ver1)
-- [hardware/cad/ver3](../../hardware/cad/ver3)
+
 
 ## Main Hardware Blocks
 
@@ -45,7 +45,7 @@ Status:
 6. Mount the main controller and hardware/pcb/body holder.
 7. Mount the front `VL53L0X` sensor so it has a clear forward view.
 8. Mount Cam 1 as the front/operator camera.
-9. Mount Cam 2 downward.
+9. Mount Cam 2 upward.
 10. Mount the `TCS34725` sensor on Cam 2 Grove I2C so it sees the floor.
 11. Verify that no wires touch the wheels or motor shafts.
 
@@ -83,16 +83,18 @@ Status:
 7. Test motors on a raised stand before placing the robot on the floor.
 8. Test `stop` before any high-speed movement.
 
-## Photos Still Required
+## Photo Evidence
 
-For a stronger Verstapost 5 package, add photos of:
+Current evidence links:
 
-- empty printed chassis;
-- motors installed;
-- battery pack installed;
-- hardware/pcb/controller installed;
-- front ToF placement;
-- Cam 1 placement;
-- Cam 2 plus TCS34725 placement;
-- wiring before closing the shell;
-- complete assembled robot.
+- [photo evidence index](../assets/photos/README.md)
+- [assembled robot photo](../assets/photos/Image%20%281%29.jpg)
+- [electronics bench integration photo](../assets/photos/Mutimedia.jpg)
+- [printed enclosure with camera/color-sensor placement](../assets/photos/PXL_20260613_160049625.jpg)
+- [3D-printing/fabrication photo](../assets/photos/Image%20%282%29.jpg)
+
+Remaining improvement before claiming production-ready assembly documentation:
+
+- add final front/back/left/right/top photos of the same fully assembled robot;
+- add close-up photos for battery access, Cam 1, Cam 2, `TCS34725`, and `VL53L0X`;
+- add measured battery service time and repeated match/endurance logs.

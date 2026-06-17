@@ -78,7 +78,7 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(
 
     .camera-tools {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(6, 1fr);
       gap: 6px;
       margin-bottom: 8px;
     }
@@ -299,6 +299,14 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(
       min-height: 18px;
     }
 
+    .log-state {
+      color: #bae6fd;
+      font-size: 0.68rem;
+      min-height: 16px;
+      margin-top: -2px;
+      margin-bottom: 6px;
+    }
+
     .map-canvas {
       width: 100%;
       height: 150px;
@@ -509,6 +517,7 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(
       <button type="button" id="toggleCam2">CAM 2</button>
       <button type="button" id="toggleCamMirror">MIRROR</button>
       <button type="button" id="toggleTapDrive">TAP</button>
+      <button type="button" id="toggleTapCalibrate">CALIB</button>
       <button type="button" id="toggleAutoPanel">AUTO</button>
     </section>
     <section class="cams">
@@ -610,7 +619,16 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(
         <button type="button" id="autoMode">Auto mode</button>
         <button type="button" id="clearMap">Clear map</button>
       </div>
+      <div class="auto-row">
+        <button type="button" id="autoLogToggle">Start log</button>
+        <button type="button" id="autoLogDownload">CSV</button>
+      </div>
+      <div class="auto-row">
+        <button type="button" id="autoLogClear">Clear log</button>
+        <button type="button" id="autoMarkPass">Mark pass</button>
+      </div>
       <div class="auto-state" id="autoState">Auto idle</div>
+      <div class="log-state" id="autoLogState">Auto log idle</div>
       <div class="speed-row">
         <span>Turn below</span>
         <span><strong id="autoTurnValue">150</strong> mm</span>
@@ -649,6 +667,7 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(
       var toggleCam2Button = document.getElementById("toggleCam2");
       var toggleCamMirrorButton = document.getElementById("toggleCamMirror");
       var toggleTapDriveButton = document.getElementById("toggleTapDrive");
+      var toggleTapCalibrateButton = document.getElementById("toggleTapCalibrate");
       var toggleAutoPanelButton = document.getElementById("toggleAutoPanel");
       var autoPanel = document.getElementById("autoPanel");
       var targetState = document.getElementById("targetState");
@@ -657,6 +676,11 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(
       var autoTurnInput = document.getElementById("autoTurnDistance");
       var autoTurnValue = document.getElementById("autoTurnValue");
       var autoState = document.getElementById("autoState");
+      var autoLogToggleButton = document.getElementById("autoLogToggle");
+      var autoLogDownloadButton = document.getElementById("autoLogDownload");
+      var autoLogClearButton = document.getElementById("autoLogClear");
+      var autoMarkPassButton = document.getElementById("autoMarkPass");
+      var autoLogState = document.getElementById("autoLogState");
       var mapCanvas = document.getElementById("mapCanvas");
       var stopButton = document.getElementById("stop");
       var hasPointer = !!window.PointerEvent;
@@ -680,6 +704,7 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(
       var lastTofData = null;
       var autoEnabled = false;
       var tapDriveEnabled = false;
+      var tapCalibrateEnabled = false;
       var cam1Mirrored = true;
       var tapDriveTimers = [];
       var tapDriveSpeed = 70;
@@ -687,18 +712,18 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(
       var tapHorizontalFovDeg = 50;
       var tapCenterDriveMs = 5000;
       var tapTurnDegPerSec = 193;
-      var tapServoActive = false;
-      var tapServoTimer = null;
       var tapCanvas = document.createElement("canvas");
       var tapCtx = tapCanvas.getContext("2d", { willReadFrequently: true });
       var tapFrameW = 160;
       var tapFrameH = 90;
-      var redMinPixels = 18;
       var autoTimer = null;
       var autoTurningUntilClear = false;
       var autoTurnDistanceMm = 150;
       var tofStopDistanceMm = 150;
       var autoTurnDir = "right";
+      var autoLogEnabled = false;
+      var autoLogRows = [];
+      var autoLogTrial = 1;
       var mapCtx = mapCanvas ? mapCanvas.getContext("2d") : null;
       var mapPose = { x: 210, y: 180, heading: -Math.PI / 2 };
       var mapLastMs = Date.now();
@@ -718,16 +743,103 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(
         }
       }
 
+      function updateAutoLogState() {
+        if (!autoLogState) {
+          return;
+        }
+        autoLogState.textContent = (autoLogEnabled ? "Logging" : "Log idle") + " | rows " + autoLogRows.length + " | trial " + autoLogTrial;
+      }
+
+      function startAutoLog() {
+        autoLogEnabled = true;
+        if (autoLogToggleButton) {
+          autoLogToggleButton.classList.add("active");
+          autoLogToggleButton.textContent = "Stop log";
+        }
+        updateAutoLogState();
+      }
+
+      function stopAutoLog() {
+        autoLogEnabled = false;
+        if (autoLogToggleButton) {
+          autoLogToggleButton.classList.remove("active");
+          autoLogToggleButton.textContent = "Start log";
+        }
+        updateAutoLogState();
+      }
+
+      function toggleAutoLog() {
+        if (autoLogEnabled) {
+          stopAutoLog();
+        } else {
+          startAutoLog();
+        }
+      }
+
+      function clearAutoLog() {
+        autoLogRows = [];
+        autoLogTrial = 1;
+        updateAutoLogState();
+      }
+
+      function addAutoLogRow(action, result, note) {
+        if (!autoLogEnabled) {
+          return;
+        }
+        autoLogRows.push({
+          ts_ms: Date.now(),
+          trial: autoLogTrial,
+          tof_ready: lastTofData && lastTofData.ready ? "true" : "false",
+          tof_valid: lastTofData && lastTofData.valid ? "true" : "false",
+          distance_mm: lastTofData && lastTofData.valid ? lastTofData.mm : "",
+          threshold_mm: autoTurnDistanceMm,
+          action: action,
+          result: result,
+          note: note || ""
+        });
+        updateAutoLogState();
+      }
+
+      function markAutoPass() {
+        if (autoLogRows.length === 0) {
+          return;
+        }
+        addAutoLogRow("mark", "pass", "operator marked trial pass");
+        autoLogTrial += 1;
+        updateAutoLogState();
+      }
+
+      function csvEscape(value) {
+        var text = String(value === undefined || value === null ? "" : value);
+        if (text.indexOf(",") >= 0 || text.indexOf("\"") >= 0 || text.indexOf("\n") >= 0) {
+          return "\"" + text.replace(/"/g, "\"\"") + "\"";
+        }
+        return text;
+      }
+
+      function downloadAutoLogCsv() {
+        var header = ["ts_ms", "trial", "tof_ready", "tof_valid", "distance_mm", "threshold_mm", "action", "result", "note"];
+        var lines = [header.join(",")];
+        for (var i = 0; i < autoLogRows.length; i++) {
+          var row = autoLogRows[i];
+          lines.push(header.map(function (key) { return csvEscape(row[key]); }).join(","));
+        }
+        var blob = new Blob([lines.join("\n") + "\n"], { type: "text/csv" });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = "auto_behavior_log.csv";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+
       function clearTapDriveTimers() {
         for (var i = 0; i < tapDriveTimers.length; i++) {
           clearTimeout(tapDriveTimers[i]);
         }
         tapDriveTimers = [];
-        if (tapServoTimer) {
-          clearTimeout(tapServoTimer);
-          tapServoTimer = null;
-        }
-        tapServoActive = false;
       }
 
       function scheduleTapStep(delayMs, fn) {
@@ -765,55 +877,14 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(
         }
       }
 
-      function findRedTarget() {
-        if (!drawTapFrame()) {
-          return null;
-        }
-        var frame;
-        try {
-          frame = tapCtx.getImageData(0, 0, tapFrameW, tapFrameH).data;
-        } catch (err) {
-          return null;
-        }
-
-        var sumX = 0;
-        var sumY = 0;
-        var count = 0;
-        var minX = tapFrameW;
-        var minY = tapFrameH;
-        var maxX = 0;
-        var maxY = 0;
-
-        for (var y = 0; y < tapFrameH; y++) {
-          for (var x = 0; x < tapFrameW; x++) {
-            var i = (y * tapFrameW + x) * 4;
-            var r = frame[i];
-            var g = frame[i + 1];
-            var b = frame[i + 2];
-            var isRed = r > 95 && r > g * 1.45 && r > b * 1.35 && (r - Math.max(g, b)) > 35;
-            if (isRed) {
-              sumX += x;
-              sumY += y;
-              count++;
-              if (x < minX) minX = x;
-              if (x > maxX) maxX = x;
-              if (y < minY) minY = y;
-              if (y > maxY) maxY = y;
-            }
-          }
-        }
-
-        if (count < redMinPixels) {
-          return null;
-        }
-
-        return {
-          x: sumX / count,
-          y: sumY / count,
-          pixels: count,
-          width: maxX - minX + 1,
-          height: maxY - minY + 1
-        };
+      /*
+       * Red-target visual servoing was tested as an experiment and is disabled.
+       * It is not used as project evidence because the behavior is not reliable
+       * enough on the current camera/lighting setup.
+       */
+      function tapServoStep() {
+        setTargetState("Red target servo disabled");
+        tapCommand("stop", "stop");
       }
 
       function setUiSpeed(value) {
@@ -1089,6 +1160,9 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(
         if (enabled && tapDriveEnabled) {
           setTapDriveMode(false);
         }
+        if (enabled && tapCalibrateEnabled) {
+          setTapCalibrateMode(false);
+        }
         autoEnabled = enabled;
         if (autoModeButton) {
           autoModeButton.classList.toggle("active", enabled);
@@ -1103,6 +1177,9 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(
       }
 
       function setTapDriveMode(enabled) {
+        if (enabled && tapCalibrateEnabled) {
+          setTapCalibrateMode(false);
+        }
         tapDriveEnabled = enabled;
         clearTapDriveTimers();
         if (toggleTapDriveButton) {
@@ -1120,6 +1197,25 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(
           }
           setTargetState("Tap CAM 1 target");
         }
+      }
+
+      function setTapCalibrateMode(enabled) {
+        if (enabled && tapDriveEnabled) {
+          setTapDriveMode(false);
+        }
+        if (enabled && autoEnabled) {
+          setAutoMode(false);
+        }
+        tapCalibrateEnabled = enabled;
+        clearTapDriveTimers();
+        if (toggleTapCalibrateButton) {
+          toggleTapCalibrateButton.classList.toggle("active", enabled);
+        }
+        if (cam1Card) {
+          cam1Card.classList.toggle("tap-armed", enabled || tapDriveEnabled);
+        }
+        stop();
+        setTargetState(enabled ? "Calibration click mode: robot will not move" : "Tap drive idle");
       }
 
       function tapCommand(dir, buttonId) {
@@ -1195,52 +1291,35 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(
         }
       }
 
-      function tapServoStep() {
-        if (!tapServoActive || !tapDriveEnabled || !cam1View) {
+      function executeTapCalibration(e) {
+        if (!tapCalibrateEnabled || !cam1View) {
           return;
         }
-
+        if (e.cancelable) {
+          e.preventDefault();
+        }
         var rect = cam1View.getBoundingClientRect();
-        var target = findRedTarget();
-        if (!target || !rect.width || !rect.height) {
-          setTargetState("Red target lost");
-          tapCommand("stop", "stop");
+        if (!rect.width || !rect.height) {
           return;
         }
+        var xPx = e.clientX - rect.left;
+        var yPx = e.clientY - rect.top;
+        var xNorm = (xPx / rect.width) * 2 - 1;
+        var yNorm = yPx / rect.height;
+        xNorm = Math.max(-1, Math.min(1, xNorm));
+        yNorm = Math.max(0, Math.min(1, yNorm));
+        showTapMarker(xPx, yPx);
+        clearTapDriveTimers();
+        stop();
+        setTargetState("PX " + Math.round(xPx) + "," + Math.round(yPx) + " | norm " + xNorm.toFixed(3) + "," + yNorm.toFixed(3));
+      }
 
-        var visualX = sourceToVisualX(target.x * rect.width / tapFrameW, rect.width);
-        var visualY = target.y * rect.height / tapFrameH;
-        showTapMarker(visualX, visualY);
-
-        var xNorm = (visualX / rect.width) * 2 - 1;
-        var yNorm = visualY / rect.height;
-        var absX = Math.abs(xNorm);
-        if (yNorm > 0.84 || target.height > 30) {
-          tapCommand("stop", "stop");
-          setTargetState("Red target reached y " + yNorm.toFixed(2));
-          tapServoActive = false;
+      function handleCam1Click(e) {
+        if (tapCalibrateEnabled) {
+          executeTapCalibration(e);
           return;
         }
-
-        if (absX > 0.14) {
-          var turnDir = xNorm < 0 ? "left" : "right";
-          var turnMs = Math.round(45 + absX * 230);
-          setTargetState("Red turn " + turnDir + " x " + xNorm.toFixed(2) + " p " + target.pixels);
-          tapCommand(turnDir, turnDir);
-          tapServoTimer = setTimeout(function () {
-            tapCommand("stop", "stop");
-            tapServoTimer = setTimeout(tapServoStep, 500);
-          }, turnMs);
-          return;
-        }
-
-        var driveMs = Math.round(180 + (1 - yNorm) * 360);
-        setTargetState("Red forward y " + yNorm.toFixed(2) + " p " + target.pixels);
-        tapCommand("forward", "up");
-        tapServoTimer = setTimeout(function () {
-          tapCommand("stop", "stop");
-          tapServoTimer = setTimeout(tapServoStep, 520);
-        }, driveMs);
+        executeTapDrive(e);
       }
 
       function autoTick() {
@@ -1253,6 +1332,7 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(
           }
           if (!lastTofData || !lastTofData.ready) {
             autoCommand("stop", "stop");
+            addAutoLogRow("stop", "waiting", "VL53L0X not ready");
             if (autoState) {
               autoState.textContent = "Auto waiting for VL53L0X";
             }
@@ -1263,12 +1343,14 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(
             if (lastTofData.valid && lastTofData.mm > 400) {
               autoTurningUntilClear = false;
               autoCommand("forward", "up");
+              addAutoLogRow("forward", "clear", "distance above 400 mm after turn");
               if (autoState) {
                 autoState.textContent = "Clear " + lastTofData.mm + " mm, forward";
               }
               return;
             }
             autoCommand(autoTurnDir, autoTurnDir);
+            addAutoLogRow(autoTurnDir, "turning", lastTofData.valid ? "turning until clear" : "turning with invalid distance");
             if (autoState) {
               autoState.textContent = lastTofData.valid ? "Turning " + autoTurnDir + " until >400 mm, now " + lastTofData.mm + " mm" : "Turning " + autoTurnDir + ", no return";
             }
@@ -1279,6 +1361,7 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(
             autoTurnDir = autoTurnDir === "right" ? "left" : "right";
             autoTurningUntilClear = true;
             autoCommand(autoTurnDir, autoTurnDir);
+            addAutoLogRow(autoTurnDir, "obstacle", "distance below turn threshold");
             if (autoState) {
               autoState.textContent = "Obstacle " + lastTofData.mm + " mm, turning below " + autoTurnDistanceMm + " mm";
             }
@@ -1288,12 +1371,14 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(
             var arcDir = autoTurnDir === "right" ? "forward-right" : "forward-left";
             var arcButton = autoTurnDir === "right" ? "upRight" : "upLeft";
             autoCommand(arcDir, arcButton);
+            addAutoLogRow(arcDir, "near", "distance near threshold");
             if (autoState) {
               autoState.textContent = "Close wall " + lastTofData.mm + " mm, arcing";
             }
             return;
           }
           autoCommand("forward", "up");
+          addAutoLogRow("forward", "clear", lastTofData.valid ? "distance clear" : "distance invalid");
           if (autoState) {
             autoState.textContent = lastTofData.valid ? "Forward, clear " + lastTofData.mm + " mm" : "Forward, no return";
           }
@@ -1338,6 +1423,9 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(
         }
         if (tapDriveEnabled) {
           setTapDriveMode(false);
+        }
+        if (tapCalibrateEnabled) {
+          setTapCalibrateMode(false);
         }
         if (activeDirection === dir && activeHoldButtonId === buttonId) {
           return;
@@ -1456,12 +1544,14 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(
             }
             setAutoMode(false);
             setTapDriveMode(false);
+            setTapCalibrateMode(false);
           });
         } else {
           stopButton.addEventListener("click", function (e) {
             e.preventDefault();
             setAutoMode(false);
             setTapDriveMode(false);
+            setTapCalibrateMode(false);
           });
         }
       }
@@ -1550,8 +1640,14 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(
         });
       }
 
+      if (toggleTapCalibrateButton) {
+        toggleTapCalibrateButton.addEventListener("click", function () {
+          setTapCalibrateMode(!tapCalibrateEnabled);
+        });
+      }
+
       if (cam1View) {
-        cam1View.addEventListener("click", executeTapDrive);
+        cam1View.addEventListener("click", handleCam1Click);
       }
 
       if (toggleAutoPanelButton) {
@@ -1570,6 +1666,22 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(
         clearMapButton.addEventListener("click", function () {
           resetMap();
         });
+      }
+
+      if (autoLogToggleButton) {
+        autoLogToggleButton.addEventListener("click", toggleAutoLog);
+      }
+
+      if (autoLogDownloadButton) {
+        autoLogDownloadButton.addEventListener("click", downloadAutoLogCsv);
+      }
+
+      if (autoLogClearButton) {
+        autoLogClearButton.addEventListener("click", clearAutoLog);
+      }
+
+      if (autoMarkPassButton) {
+        autoMarkPassButton.addEventListener("click", markAutoPass);
       }
 
       if (autoTurnInput) {
@@ -1619,7 +1731,9 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(
       setCameraVisible(cam2Card, toggleCam2Button, "CAM 2", false);
       setCam1Mirror(true);
       setTapDriveMode(false);
+      setTapCalibrateMode(false);
       setAutoPanelVisible(false);
+      updateAutoLogState();
       resetMap();
       updateTof();
       updateCam2Color();

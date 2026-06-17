@@ -27,7 +27,6 @@ The long-term goal is one reliable working prototype plus enough documentation t
 - Estonian comparative analysis: [`docs/analysis/Vordlev_analyys.docx`](docs/analysis/Vordlev_analyys.docx), [`docs/analysis/Vordlev_analyys_summary.md`](docs/analysis/Vordlev_analyys_summary.md)
 - Full test-results notebook: [`tests/notebooks/test_results_analysis.ipynb`](tests/notebooks/test_results_analysis.ipynb)
 - Notebook launcher: [`tools/RUN_TEST_RESULTS_NOTEBOOK.ps1`](tools/RUN_TEST_RESULTS_NOTEBOOK.ps1)
-- Milestone plan: [`docs/milestones/VERSTAPOSTID_PLAN.md`](docs/milestones/VERSTAPOSTID_PLAN.md)
 - Original Verstapost brief images: [`docs/assets/briefs`](docs/assets/briefs)
 
 Current hardware baseline:
@@ -116,10 +115,10 @@ Detailed evidence is linked from the Excel tracker and from the documentation in
   Test plan, movement/sensor protocol, and latency write-up.
 
 - [`docs/milestones/`](docs/milestones)  
-  Main Excel tracker, requirements matrix, and milestone status.
+  Main Excel tracker and milestone status.
 
 - [`docs/assets/`](docs/assets)  
-  Milestone brief images and order screenshots.
+  Milestone brief images, order screenshots, and photo evidence.
 
 ### Tests and measurements
 
@@ -162,8 +161,17 @@ Detailed evidence is linked from the Excel tracker and from the documentation in
 
 ### Media
 
+- [`docs/assets/photos/README.md`](docs/assets/photos/README.md)
+  Photo evidence for fabrication, electronics integration, printed enclosure parts, and assembled robot state.
+
+- [`media/video/README.md`](media/video/README.md)
+  Index of video evidence with measured durations.
+
 - [`media/video/MicrosoftTeams-video.mp4`](media/video/MicrosoftTeams-video.mp4)  
   Demo evidence showing camera streaming.
+
+- [`media/video/0-02-05-5cafa7a371385dc5dc37026175887d8e437ea1f9ac49a73fc301792a9de68af1_9c676645fed6c17c.mp4`](media/video/0-02-05-5cafa7a371385dc5dc37026175887d8e437ea1f9ac49a73fc301792a9de68af1_9c676645fed6c17c.mp4)
+  Additional robot/camera demonstration video evidence.
 
 ## Recommended reading order
 
@@ -172,7 +180,7 @@ If you are opening this repository for the first time, start here:
 1. [`docs/specification/V1_specification.md`](docs/specification/V1_specification.md)
 2. [`docs/milestones/VERSTAPOST_REQUIREMENTS_TRACKER.xlsx`](docs/milestones/VERSTAPOST_REQUIREMENTS_TRACKER.xlsx)
 3. [`docs/specification/TECH_COMPARISON.md`](docs/specification/TECH_COMPARISON.md)
-4. [`docs/milestones/VERSTAPOSTID_PLAN.md`](docs/milestones/VERSTAPOSTID_PLAN.md)
+4. [`docs/testing/test_plan.md`](docs/testing/test_plan.md)
 5. [`docs/specification/BOM.csv`](docs/specification/BOM.csv)
 6. [`docs/specification/power_scheme.md`](docs/specification/power_scheme.md)
 7. [`docs/testing/test_plan.md`](docs/testing/test_plan.md)
@@ -184,7 +192,6 @@ If you are opening this repository for the first time, start here:
 
 Planned next technical steps:
 - calibrate or explain the measured `VL53L0X` offset;
-- re-run the brownout test with Cam1/Cam2 confirmed online;
-- add color repeatability and tap-drive accuracy measurements;
+- run the full auto-behavior logger test after charging the robot;
 - complete enclosure heat/impact/service/endurance tests;
-- add final assembly photos and measured validation tables.
+- add final multi-angle assembly photos and measured validation tables.

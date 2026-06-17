@@ -1,0 +1,6 @@
+date,target_id,tap_x_px,tap_y_px,target_x_mm,target_y_mm,final_x_mm,final_y_mm,position_error_mm,heading_error_deg,result,notes
+YYYY-MM-DD,T1,,,,,,,,,,
+YYYY-MM-DD,T2,,,,,,,,,,
+YYYY-MM-DD,T3,,,,,,,,,,
+YYYY-MM-DD,T4,,,,,,,,,,
+YYYY-MM-DD,T5,,,,,,,,,,

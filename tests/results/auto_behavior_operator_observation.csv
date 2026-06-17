@@ -1,0 +1,2 @@
+date,trial,obstacle_distance_mm,observed_action,result,source,notes
+2026-06-17,1,200,turn_or_avoid,pass,operator_observation,Robot was observed turning/avoiding at approximately 20 cm; battery depleted before a full 5-trial logger CSV could be collected.

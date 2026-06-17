@@ -189,7 +189,7 @@ Evidence:
 - [main web UI](../../firmware/main/01_WebUi.ino)
 
 Status:
-- implemented and flashed during integration; still needs repeatability measurements on real arena colors.
+- implemented, flashed, and measured on red, light, and dark surfaces. Closed-loop retreat/avoid behavior is not claimed in this test.
 
 ### 10. Tap-Drive and Simple Auto Behavior
 
@@ -202,10 +202,16 @@ Method:
 
 Evidence:
 - [main web UI](../../firmware/main/01_WebUi.ino)
+- [auto behavior logger](auto_behavior_logger.md)
+- [auto behavior observation](auto_behavior_observation.md)
+- [tap-drive algorithm](tap_drive_algorithm.md)
+- [camera calibration and tap-drive plan](camera_calibration_tap_drive_plan.md)
+- [camera calibration notebook](../../tests/notebooks/camera_calibration_tap_drive.ipynb)
+- [tap-drive accuracy template](../../tests/results/tap_drive_accuracy_test_template.csv)
 
 Status:
-- implemented as prototype behavior.
-- not yet calibrated with OpenCV/homography.
+- implemented as a timed camera-coordinate tap-drive algorithm.
+- not yet calibrated with full OpenCV/homography.
 - not yet measured against target accuracy requirements.
 
 ## Open Tests Required for Stronger V3-V5 Claims
@@ -241,14 +247,13 @@ Required measurements:
 
 ### C. Color / Red-Area Repeatability
 
-Required measurements:
-- place robot over arena colors;
-- record color endpoint values for red, white, black/dark, and mixed surfaces;
-- repeat at least `5` times per surface;
-- decide thresholds for match behavior.
+Current file:
+- [color_repeatability_test.csv](../../tests/results/color_repeatability_test.csv)
 
-Suggested output:
-- `tests/results/color_repeatability_test.csv`
+Current status:
+- measured rows exist for red, light, and dark surfaces;
+- dark threshold was corrected and flashed to Cam 2;
+- UI confirmed `COLOR DARK` after the fix.
 
 ### D. Click-To-Drive Accuracy
 
@@ -259,7 +264,8 @@ Required measurements:
 - repeat at least `5-10` trials.
 
 Suggested output:
-- `tests/results/tap_drive_accuracy_test.csv`
+- template: [tap_drive_accuracy_test_template.csv](../../tests/results/tap_drive_accuracy_test_template.csv)
+- measured output after testing: `tests/results/tap_drive_accuracy_test.csv`
 
 ### E. Enclosure and Service Tests
 

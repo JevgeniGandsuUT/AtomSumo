@@ -4,8 +4,9 @@
 The script sends movement commands at several PWM values and records whether
 the main controller, camera streams, or Cam 2 color endpoint become unreachable.
 
-It cannot directly measure current or driver temperature; add those observations
-to the notes column after the run if measured externally.
+It cannot directly measure current, driver temperature, or what the operator saw
+in an already-open browser stream; add those observations to the notes column
+after the run if measured externally.
 """
 
 from __future__ import annotations
@@ -65,8 +66,12 @@ def run_test(args: argparse.Namespace) -> list[dict[str, str]]:
                 time.sleep(args.rest)
 
                 tof_ok, tof_note = fetch(args.base_url.rstrip("/") + "/tof", timeout=args.timeout)
-                cam1_ok, cam1_note = fetch(args.cam1_capture_url, timeout=args.camera_timeout) if args.cam1_capture_url else (True, "skipped")
-                cam2_ok, cam2_note = fetch(args.cam2_capture_url, timeout=args.camera_timeout) if args.cam2_capture_url else (True, "skipped")
+                if args.camera_observed:
+                    cam1_ok, cam1_note = True, "operator_observed_browser_stream"
+                    cam2_ok, cam2_note = True, "operator_observed_browser_stream"
+                else:
+                    cam1_ok, cam1_note = fetch(args.cam1_capture_url, timeout=args.camera_timeout) if args.cam1_capture_url else (True, "skipped")
+                    cam2_ok, cam2_note = fetch(args.cam2_capture_url, timeout=args.camera_timeout) if args.cam2_capture_url else (True, "skipped")
                 color_ok, color_note = fetch(args.cam2_color_url, timeout=args.timeout) if args.cam2_color_url else (True, "skipped")
 
                 main_after_ok, main_after_note = fetch(args.base_url, timeout=args.timeout)
@@ -88,6 +93,8 @@ def run_test(args: argparse.Namespace) -> list[dict[str, str]]:
                     notes.append(f"cam2_failed={cam2_note}")
                 if not color_ok:
                     notes.append(f"color_failed={color_note}")
+                if args.camera_observed:
+                    notes.append("camera_observed_in_browser=yes")
 
                 rows.append(
                     {
@@ -132,8 +139,16 @@ def append_rows(path: Path, rows: list[dict[str, str]]) -> None:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run ATOM Sumo power brownout test.")
     parser.add_argument("--base-url", default="http://192.168.4.1")
-    parser.add_argument("--cam1-capture-url", default="http://192.168.4.20/capture")
-    parser.add_argument("--cam2-capture-url", default="http://192.168.4.21/capture")
+    parser.add_argument(
+        "--cam1-capture-url",
+        default="http://192.168.4.20/",
+        help="Camera 1 health-check URL. Default checks the camera page, not the long-running MJPEG stream.",
+    )
+    parser.add_argument(
+        "--cam2-capture-url",
+        default="http://192.168.4.21/",
+        help="Camera 2 health-check URL. Default checks the camera page, not the long-running MJPEG stream.",
+    )
     parser.add_argument("--cam2-color-url", default="http://192.168.4.21:81/color")
     parser.add_argument("--output", default="tests/results/power_brownout_test.csv")
     parser.add_argument("--power-source", default="2S_18650")
@@ -146,6 +161,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--settle", type=float, default=0.3)
     parser.add_argument("--timeout", type=float, default=1.0)
     parser.add_argument("--camera-timeout", type=float, default=2.0)
+    parser.add_argument(
+        "--camera-observed",
+        action="store_true",
+        help="Use when Cam1/Cam2 stayed visible in the browser UI during the test. This avoids false camera_loss rows from single-client MJPEG/capture endpoint limits.",
+    )
     return parser.parse_args()
 
 

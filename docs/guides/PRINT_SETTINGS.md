@@ -4,7 +4,8 @@ This document records the current 3D-printing guidance for the robot chassis/enc
 
 Status:
 - CAD evidence is present;
-- final material-specific print validation is still open.
+- printed-part photo evidence is present;
+- final material-specific heat/impact/endurance validation is still open.
 
 ## CAD Sources
 
@@ -66,10 +67,15 @@ Suggested result files:
 
 ## Photos Still Needed
 
-For final documentation, add photos of:
+Current photo evidence:
 
-- printed parts before assembly;
-- support removal / cleanup;
-- electronics installed;
-- battery access;
-- final assembled robot from front, back, left, right, and top.
+- [3D-printed part on printer](<../assets/photos/Image.jpg>)
+- [printing/fabrication process photo](../assets/photos/Image%20%282%29.jpg)
+- [printed enclosure/body with camera and color-sensor placement](../assets/photos/PXL_20260613_160049625.jpg)
+- [assembled robot photo](../assets/photos/Image%20%281%29.jpg)
+
+For final production-style documentation, still add:
+
+- support removal / cleanup photos;
+- final assembled robot from front, back, left, right, and top;
+- measured heat, impact, battery-service, and endurance tables.

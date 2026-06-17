@@ -39,3 +39,133 @@ date,pwm,command,trial,power_source,reset_observed,wifi_disconnect,camera_loss,n
 2026-06-14,255,right,2,2S_18650,no,no,yes,camera endpoints failed during original run
 2026-06-14,255,stop,1,2S_18650,no,no,yes,camera endpoints failed during original run
 2026-06-14,255,stop,2,2S_18650,no,no,yes,camera endpoints failed during original run
+2026-06-17,80,forward,1,2S_18650,no,no,yes,cam1_failed=TimeoutError; cam2_failed=TimeoutError
+2026-06-17,80,forward,2,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,80,backward,1,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,80,backward,2,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,80,left,1,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,80,left,2,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,80,right,1,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,80,right,2,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,80,stop,1,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,80,stop,2,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,150,forward,1,2S_18650,no,no,yes,cam1_failed=TimeoutError; cam2_failed=TimeoutError
+2026-06-17,150,forward,2,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,150,backward,1,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,150,backward,2,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,150,left,1,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,150,left,2,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,150,right,1,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,150,right,2,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,150,stop,1,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,150,stop,2,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,180,forward,1,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,180,forward,2,2S_18650,no,no,yes,cam1_failed=TimeoutError; cam2_failed=TimeoutError
+2026-06-17,180,backward,1,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,180,backward,2,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,180,left,1,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,180,left,2,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,180,right,1,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,180,right,2,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,180,stop,1,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,180,stop,2,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,255,forward,1,2S_18650,suspected,yes,yes,stop_failed=URLError; tof_failed=URLError; main_after_failed=URLError; cam1_failed=URLError; cam2_failed=URLError; color_failed=URLError
+2026-06-17,255,forward,2,2S_18650,suspected,yes,yes,cmd_failed=URLError; stop_failed=URLError; tof_failed=URLError; main_after_failed=URLError; cam1_failed=URLError; cam2_failed=URLError; color_failed=URLError
+2026-06-17,255,backward,1,2S_18650,suspected,yes,yes,cmd_failed=URLError; stop_failed=URLError; tof_failed=URLError; main_after_failed=URLError; cam1_failed=URLError; cam2_failed=URLError; color_failed=URLError
+2026-06-17,255,backward,2,2S_18650,suspected,yes,yes,cmd_failed=URLError; stop_failed=URLError; tof_failed=URLError; main_after_failed=URLError; cam1_failed=URLError; cam2_failed=URLError; color_failed=URLError
+2026-06-17,255,left,1,2S_18650,suspected,yes,yes,cmd_failed=URLError; stop_failed=URLError; tof_failed=URLError; main_after_failed=URLError; cam1_failed=URLError; cam2_failed=URLError; color_failed=URLError
+2026-06-17,255,left,2,2S_18650,suspected,yes,yes,cmd_failed=URLError; stop_failed=URLError; tof_failed=URLError; main_after_failed=URLError; cam1_failed=URLError; cam2_failed=URLError; color_failed=URLError
+2026-06-17,255,right,1,2S_18650,suspected,yes,yes,cmd_failed=URLError; stop_failed=URLError; tof_failed=URLError; main_after_failed=URLError; cam1_failed=URLError; cam2_failed=URLError; color_failed=URLError
+2026-06-17,255,right,2,2S_18650,suspected,yes,yes,cmd_failed=URLError; stop_failed=URLError; tof_failed=URLError; main_after_failed=URLError; cam1_failed=URLError; cam2_failed=URLError; color_failed=URLError
+2026-06-17,255,stop,1,2S_18650,suspected,yes,yes,cmd_failed=URLError; stop_failed=URLError; tof_failed=URLError; main_after_failed=URLError; cam1_failed=URLError; cam2_failed=URLError; color_failed=URLError
+2026-06-17,255,stop,2,2S_18650,suspected,yes,yes,cmd_failed=URLError; stop_failed=URLError; tof_failed=URLError; main_after_failed=URLError; cam1_failed=URLError; cam2_failed=URLError; color_failed=URLError
+2026-06-17,80,forward,1,2S_18650,no,no,yes,cam1_failed=TimeoutError; cam2_failed=TimeoutError
+2026-06-17,80,forward,2,2S_18650,no,no,yes,cam1_failed=TimeoutError; cam2_failed=TimeoutError
+2026-06-17,80,backward,1,2S_18650,no,no,yes,cam1_failed=TimeoutError; cam2_failed=TimeoutError
+2026-06-17,80,backward,2,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,80,left,1,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,80,left,2,2S_18650,suspected,yes,yes,main_after_failed=URLError; cam1_failed=URLError; cam2_failed=URLError; color_failed=URLError
+2026-06-17,80,right,1,2S_18650,suspected,yes,yes,cmd_failed=URLError; stop_failed=URLError; tof_failed=URLError; main_after_failed=URLError; cam1_failed=URLError; cam2_failed=URLError; color_failed=URLError
+2026-06-17,80,right,2,2S_18650,suspected,yes,yes,cmd_failed=URLError; stop_failed=URLError; tof_failed=URLError; main_after_failed=URLError; cam1_failed=URLError; cam2_failed=URLError; color_failed=URLError
+2026-06-17,80,stop,1,2S_18650,suspected,yes,yes,cmd_failed=URLError; stop_failed=URLError; tof_failed=URLError; main_after_failed=URLError; cam1_failed=URLError; cam2_failed=URLError; color_failed=URLError
+2026-06-17,80,stop,2,2S_18650,suspected,yes,yes,cmd_failed=URLError; stop_failed=URLError; tof_failed=URLError; main_after_failed=URLError; cam1_failed=URLError; cam2_failed=URLError; color_failed=URLError
+2026-06-17,150,forward,1,2S_18650,suspected,yes,yes,speed_set_failed=URLError; cmd_failed=URLError; stop_failed=URLError; tof_failed=URLError; main_after_failed=URLError; cam1_failed=URLError; cam2_failed=URLError; color_failed=URLError
+2026-06-17,150,forward,2,2S_18650,suspected,yes,yes,speed_set_failed=URLError; cmd_failed=URLError; stop_failed=URLError; tof_failed=URLError; main_after_failed=URLError; cam1_failed=URLError; cam2_failed=URLError; color_failed=URLError
+2026-06-17,150,backward,1,2S_18650,suspected,yes,yes,speed_set_failed=URLError; cmd_failed=URLError; stop_failed=URLError; tof_failed=URLError; main_after_failed=URLError; cam1_failed=URLError; cam2_failed=URLError; color_failed=URLError
+2026-06-17,150,backward,2,2S_18650,suspected,yes,yes,speed_set_failed=URLError; cmd_failed=URLError; stop_failed=URLError; tof_failed=URLError; main_after_failed=URLError; cam1_failed=URLError; cam2_failed=URLError; color_failed=URLError
+2026-06-17,150,left,1,2S_18650,suspected,yes,no,speed_set_failed=URLError; cmd_failed=URLError
+2026-06-17,150,left,2,2S_18650,no,no,no,speed_set_failed=URLError
+2026-06-17,150,right,1,2S_18650,no,no,yes,speed_set_failed=URLError; cam1_failed=TimeoutError; cam2_failed=TimeoutError
+2026-06-17,150,right,2,2S_18650,suspected,yes,yes,speed_set_failed=URLError; main_after_failed=URLError; cam1_failed=TimeoutError; cam2_failed=TimeoutError; color_failed=URLError
+2026-06-17,150,stop,1,2S_18650,suspected,yes,no,speed_set_failed=URLError; cmd_failed=URLError; stop_failed=URLError; tof_failed=URLError
+2026-06-17,150,stop,2,2S_18650,no,no,no,speed_set_failed=URLError
+2026-06-17,180,forward,1,2S_18650,no,no,no,automatic test passed
+2026-06-17,180,forward,2,2S_18650,no,no,no,automatic test passed
+2026-06-17,180,backward,1,2S_18650,no,no,yes,cam2_failed=TimeoutError; color_failed=URLError
+2026-06-17,180,backward,2,2S_18650,suspected,yes,yes,main_after_failed=URLError; cam1_failed=TimeoutError; cam2_failed=URLError; color_failed=URLError
+2026-06-17,180,left,1,2S_18650,suspected,yes,yes,cmd_failed=URLError; stop_failed=URLError; tof_failed=URLError; main_after_failed=URLError; cam1_failed=URLError; cam2_failed=URLError; color_failed=URLError
+2026-06-17,180,left,2,2S_18650,suspected,yes,yes,cmd_failed=URLError; stop_failed=URLError; tof_failed=URLError; main_after_failed=URLError; cam1_failed=URLError; cam2_failed=URLError; color_failed=URLError
+2026-06-17,180,right,1,2S_18650,suspected,yes,yes,cmd_failed=URLError; stop_failed=URLError; tof_failed=URLError; main_after_failed=URLError; cam1_failed=URLError; cam2_failed=URLError; color_failed=URLError
+2026-06-17,180,right,2,2S_18650,suspected,yes,yes,cmd_failed=URLError; stop_failed=URLError; tof_failed=URLError; main_after_failed=URLError; cam1_failed=URLError; cam2_failed=URLError; color_failed=URLError
+2026-06-17,180,stop,1,2S_18650,suspected,yes,yes,cmd_failed=URLError; stop_failed=URLError; tof_failed=URLError; main_after_failed=URLError; cam1_failed=URLError; cam2_failed=URLError; color_failed=URLError
+2026-06-17,180,stop,2,2S_18650,suspected,yes,yes,cmd_failed=URLError; stop_failed=URLError; tof_failed=URLError; main_after_failed=URLError; cam1_failed=URLError; cam2_failed=URLError; color_failed=URLError
+2026-06-17,80,forward,1,2S_18650,no,no,yes,cam1_failed=TimeoutError; cam2_failed=TimeoutError
+2026-06-17,80,forward,2,2S_18650,no,no,yes,cam1_failed=TimeoutError; cam2_failed=TimeoutError
+2026-06-17,80,backward,1,2S_18650,no,no,yes,cam1_failed=TimeoutError; cam2_failed=TimeoutError
+2026-06-17,80,backward,2,2S_18650,no,no,yes,cam1_failed=TimeoutError; cam2_failed=URLError
+2026-06-17,80,left,1,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,80,left,2,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,80,right,1,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,80,right,2,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,80,stop,1,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,80,stop,2,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,150,forward,1,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,150,forward,2,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,150,backward,1,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,150,backward,2,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,150,left,1,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,150,left,2,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,150,right,1,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,150,right,2,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,150,stop,1,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,150,stop,2,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,180,forward,1,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,180,forward,2,2S_18650,no,no,yes,cam1_failed=URLError; cam2_failed=URLError
+2026-06-17,180,backward,1,2S_18650,no,no,yes,cam1_failed=TimeoutError; cam2_failed=TimeoutError
+2026-06-17,180,backward,2,2S_18650,no,no,yes,cam1_failed=TimeoutError; cam2_failed=TimeoutError
+2026-06-17,180,left,1,2S_18650,no,no,yes,cam1_failed=ConnectionResetError; cam2_failed=URLError; color_failed=URLError
+2026-06-17,180,left,2,2S_18650,no,no,yes,cam1_failed=ConnectionResetError; cam2_failed=URLError
+2026-06-17,180,right,1,2S_18650,no,no,yes,cam1_failed=ConnectionResetError
+2026-06-17,180,right,2,2S_18650,no,no,yes,cam1_failed=ConnectionResetError
+2026-06-17,180,stop,1,2S_18650,no,no,yes,cam1_failed=ConnectionResetError
+2026-06-17,180,stop,2,2S_18650,no,no,yes,cam1_failed=ConnectionResetError
+2026-06-17,80,forward,1,2S_18650,no,no,no,camera_observed_in_browser=yes
+2026-06-17,80,forward,2,2S_18650,no,no,no,camera_observed_in_browser=yes
+2026-06-17,80,backward,1,2S_18650,no,no,no,camera_observed_in_browser=yes
+2026-06-17,80,backward,2,2S_18650,no,no,no,camera_observed_in_browser=yes
+2026-06-17,80,left,1,2S_18650,no,no,no,camera_observed_in_browser=yes
+2026-06-17,80,left,2,2S_18650,no,no,no,camera_observed_in_browser=yes
+2026-06-17,80,right,1,2S_18650,no,no,no,camera_observed_in_browser=yes
+2026-06-17,80,right,2,2S_18650,no,no,yes,color_failed=URLError; camera_observed_in_browser=yes
+2026-06-17,80,stop,1,2S_18650,no,no,yes,color_failed=URLError; camera_observed_in_browser=yes
+2026-06-17,80,stop,2,2S_18650,no,no,no,camera_observed_in_browser=yes
+2026-06-17,150,forward,1,2S_18650,no,no,no,camera_observed_in_browser=yes
+2026-06-17,150,forward,2,2S_18650,no,no,no,camera_observed_in_browser=yes
+2026-06-17,150,backward,1,2S_18650,no,no,no,camera_observed_in_browser=yes
+2026-06-17,150,backward,2,2S_18650,no,no,no,camera_observed_in_browser=yes
+2026-06-17,150,left,1,2S_18650,no,no,no,camera_observed_in_browser=yes
+2026-06-17,150,left,2,2S_18650,no,no,no,camera_observed_in_browser=yes
+2026-06-17,150,right,1,2S_18650,no,no,no,camera_observed_in_browser=yes
+2026-06-17,150,right,2,2S_18650,no,no,no,camera_observed_in_browser=yes
+2026-06-17,150,stop,1,2S_18650,no,no,no,camera_observed_in_browser=yes
+2026-06-17,150,stop,2,2S_18650,no,no,no,camera_observed_in_browser=yes
+2026-06-17,180,forward,1,2S_18650,no,no,no,camera_observed_in_browser=yes
+2026-06-17,180,forward,2,2S_18650,no,no,no,camera_observed_in_browser=yes
+2026-06-17,180,backward,1,2S_18650,no,no,no,camera_observed_in_browser=yes
+2026-06-17,180,backward,2,2S_18650,no,no,no,camera_observed_in_browser=yes
+2026-06-17,180,left,1,2S_18650,no,no,no,camera_observed_in_browser=yes
+2026-06-17,180,left,2,2S_18650,no,no,no,camera_observed_in_browser=yes
+2026-06-17,180,right,1,2S_18650,no,no,no,camera_observed_in_browser=yes
+2026-06-17,180,right,2,2S_18650,no,no,no,camera_observed_in_browser=yes
+2026-06-17,180,stop,1,2S_18650,no,no,no,camera_observed_in_browser=yes
+2026-06-17,180,stop,2,2S_18650,no,no,no,camera_observed_in_browser=yes

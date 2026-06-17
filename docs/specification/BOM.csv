@@ -13,6 +13,7 @@ BOM-011,Wheel set 42x19 mm driven pair,,Pololu_2pk,drive_train,driven_wheel_pair
 BOM-012,Wheel set 42x19 mm driven pair,,Pololu_2pk,drive_train,second_driven_wheel_pair,1,1,9.50,9.50,local_order_screenshot,ordered,yes,Order1.png,Second driven wheel pair for 4WD; motors are wired as two left/right parallel pairs
 BOM-013,1000uF 16V radial capacitor,TDK,B41858C4108M000,power,motor_supply_bulk_capacitor,1,1,0.929,0.929,Mouser,ordered,yes,Order2.png,Motor rail bulk decoupling capacitor
 BOM-014,Slide switch,C_and_K,L201011MS02Q,power,master_power_switch,1,1,4.83,4.83,Mouser,ordered,yes,Order2.png,Master power switch
+BOM-015,RGB color sensor,,TCS34725_CJMCU-34725,sensor,cam2_floor_color_telemetry,1,2,4.70,9.40,Digipurk,ordered,yes,Order3.png,Two ordered; one used on Cam2 Grove I2C for TCS34725 color telemetry
 BOM-016,N20 6V DC gearmotor,,N20_6V,drive_train,four_wheel_drive_motors,4,4,,,existing_or_lab_stock,to_be_confirmed,yes,,Four motors total; two left motors share TB6612 channel A and two right motors share channel B; motor rail fixed at 6.0V
 BOM-017,Custom PCB,,,electronics_integration,main_interconnect_board,1,0,,,in_house_design,design_ready_not_ordered,yes,PCB_repo,Gerber and EasyEDA source already exist
 BOM-018,3D printed chassis,,,mechanical,chassis_body,1,0,,,in_house,cad_complete_print_pending,yes,cad_repo,Generated from cad/ver1/chassis_n20.scad

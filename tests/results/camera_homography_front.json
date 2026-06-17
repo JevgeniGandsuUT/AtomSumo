@@ -1,0 +1,80 @@
+{
+  "date": "2026-06-17",
+  "source_points": "tests/results/camera_homography_points.csv",
+  "method": "DLT homography pixel_to_arena least_squares using 6 manually measured points",
+  "input": "pixel_x,pixel_y",
+  "output": "arena_x_mm,arena_y_mm",
+  "matrix_pixel_to_arena": [
+    [
+      -2.25089848,
+      0.5373818,
+      432.58339479
+    ],
+    [
+      -0.6178387,
+      18.42488709,
+      -3544.75720315
+    ],
+    [
+      0.00081744,
+      -0.01933513,
+      1.0
+    ]
+  ],
+  "points": [
+    {
+      "point_id": "P1",
+      "pixel_x": 325,
+      "pixel_y": 153,
+      "arena_x_mm": 150,
+      "arena_y_mm": 500,
+      "notes": ""
+    },
+    {
+      "point_id": "P2",
+      "pixel_x": 100,
+      "pixel_y": 131,
+      "arena_x_mm": -220,
+      "arena_y_mm": 760,
+      "notes": ""
+    },
+    {
+      "point_id": "P3",
+      "pixel_x": 196,
+      "pixel_y": 151,
+      "arena_x_mm": 0,
+      "arena_y_mm": 550,
+      "notes": ""
+    },
+    {
+      "point_id": "P4",
+      "pixel_x": 34,
+      "pixel_y": 164,
+      "arena_x_mm": -200,
+      "arena_y_mm": 250,
+      "notes": ""
+    },
+    {
+      "point_id": "P5",
+      "pixel_x": 322,
+      "pixel_y": 181,
+      "arena_x_mm": 60,
+      "arena_y_mm": 200,
+      "notes": ""
+    },
+    {
+      "point_id": "P6",
+      "pixel_x": 143,
+      "pixel_y": 127,
+      "arena_x_mm": -150,
+      "arena_y_mm": 1000,
+      "notes": ""
+    }
+  ],
+  "residuals": {
+    "mean_error_mm": 43.6,
+    "median_error_mm": 45.0,
+    "max_error_mm": 68.3
+  },
+  "warning": "Manual point collection; use as practical homography evidence, not precision metrology."
+}

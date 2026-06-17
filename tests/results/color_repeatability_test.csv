@@ -1,0 +1,10 @@
+date,surface,trial,ui_name_before_fix,expected_name,predicted_name_after_fix,clear,red,green,blue,result,notes
+2026-06-17,red,1,red,red,red,720,456,168,117,pass,
+2026-06-17,red,2,red,red,red,721,459,168,117,pass,
+2026-06-17,red,3,red,red,red,722,458,168,117,pass,
+2026-06-17,light,1,unknown,white,white,798,367,267,165,pass,warm light surface
+2026-06-17,light,2,unknown,white,white,797,367,266,165,pass,warm light surface
+2026-06-17,light,3,unknown,white,white,797,370,269,165,pass,warm light surface
+2026-06-17,dark,1,white,dark,dark,87,44,27,17,pass,old threshold clear<35 misclassified this as white; after flash UI confirmed COLOR DARK
+2026-06-17,dark,2,white,dark,dark,87,44,27,17,pass,old threshold clear<35 misclassified this as white; after flash UI confirmed COLOR DARK
+2026-06-17,dark,3,white,dark,dark,86,44,27,17,pass,old threshold clear<35 misclassified this as white; after flash UI confirmed COLOR DARK

@@ -444,13 +444,13 @@ static bool tcsRead16(uint8_t reg, uint16_t* value) {
 }
 
 static const char* classifyColor(uint16_t red, uint16_t green, uint16_t blue, uint16_t clear) {
-    if (clear < 35) {
+    if (clear < 150) {
         return "dark";
     }
 
     uint16_t maxChannel = max(red, max(green, blue));
     uint16_t minChannel = min(red, min(green, blue));
-    if (maxChannel < 80 || (maxChannel - minChannel) < (clear / 12)) {
+    if (maxChannel < 80 || (clear > 250 && (maxChannel - minChannel) < (clear / 3))) {
         return "white";
     }
     if (red > green * 13 / 10 && red > blue * 13 / 10) {

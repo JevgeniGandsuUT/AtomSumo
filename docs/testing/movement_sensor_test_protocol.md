@@ -11,6 +11,7 @@ The goal is to collect repeatable evidence for Verstapost 2 and Verstapost 3.
 4. ToF stop-distance test
 5. ToF distance accuracy test
 6. Power brownout / reset test
+7. Camera calibration and tap-drive accuracy test
 
 ## Common Setup
 
@@ -142,6 +143,27 @@ Pass / evidence condition:
 
 Suggested data file:
 - `tests/results/power_brownout_test.csv`
+
+## 7. Camera Calibration and Tap-Drive Accuracy Test
+
+Objective:
+- verify that tap-to-drive can map a clicked camera target into measured arena movement.
+
+Method:
+- collect front-camera calibration images;
+- fill `tests/results/camera_homography_points_template.csv` with marker pixel and arena coordinates;
+- fill `tests/results/tap_drive_accuracy_test_template.csv` during physical target trials;
+- save the real measured result as `tests/results/tap_drive_accuracy_test.csv`.
+
+Pass / evidence condition:
+- camera calibration and homography inputs are documented;
+- at least `5` tap-drive target trials are measured;
+- median and maximum final position error are reported.
+
+Suggested data files:
+- `tests/results/camera_homography_points_template.csv`
+- `tests/results/tap_drive_accuracy_test_template.csv`
+- `tests/results/tap_drive_accuracy_test.csv`
 
 ## Recommended Verstapost Wording
 

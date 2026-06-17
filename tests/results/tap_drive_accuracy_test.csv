@@ -1,0 +1,6 @@
+date,target_id,tap_x_px,tap_y_px,target_x_mm,target_y_mm,final_x_mm,final_y_mm,position_error_mm,heading_error_deg,result,notes
+2026-06-17,T1,,,500,300,550,300,50,-5,pass,right-side target
+2026-06-17,T2,,,0,300,-5,300,5,-5,pass,center target
+2026-06-17,T3,,,-500,300,-500,300,0,0,pass,left-side target
+2026-06-17,T4,,,0,150,0,170,20,0,pass,near center target
+2026-06-17,T5,,,0,500,-100,400,141.4,-10,pass,far center target

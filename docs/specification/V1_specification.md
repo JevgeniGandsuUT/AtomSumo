@@ -517,10 +517,11 @@ The table below reflects the currently chosen architecture for one working refer
 | `42 x 19 mm` wheels | 2 working pairs | ordered | see order history | Both wheel pairs are driven in the current 4WD build |
 | `1000 uF / 16 V` capacitor | 1 | ordered | `0.929 EUR` | Motor rail decoupling |
 | Slide switch | 1 | ordered | `4.83 EUR` | Master power switch |
+| `TCS34725` RGB color sensor `CJMCU-34725` | 2 ordered / 1 used | ordered | `9.40 EUR` total | Cam 2 floor color telemetry; purchase evidence in `Order3.png` |
 | N20 6V DC gearmotors | 4 | existing or lab stock, to be confirmed | not counted yet | Motor voltage fixed at `6V`; two motors are wired in parallel per TB6612 channel |
 | 3D-printed chassis/enclosure | 1 | CAD present | material-dependent | Baseline OpenSCAD and real Fusion CAD exist; final print validation still pending |
 
-Approximate visible reference-build BOM spend from the available order screenshots is about `101.54 EUR`, excluding any lab-stock electronics and any still-unconfirmed motor purchase.
+Approximate visible reference-build BOM spend from the available order screenshots is about `110.94 EUR` in item costs, or `113.48 EUR` if the `Order3.png` sensor-shipping cost is included. This excludes any lab-stock electronics and any still-unconfirmed motor purchase.
 
 ## 15. Open Design Issues
 

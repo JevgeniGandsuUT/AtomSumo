@@ -8,6 +8,8 @@ The project combines:
 - `2S 18650` battery power;
 - `TB6612FNG` motor driver;
 - `4 x N20 6V` drive motors, wired as left/right parallel motor pairs;
+- `VL53L0X` front ToF distance sensing;
+- `TCS34725` floor color telemetry on Cam 2;
 - a browser-based control interface over the robot's own Wi-Fi access point.
 
 The long-term goal is one reliable working prototype plus enough documentation to support small-batch replication before the arena event.
@@ -34,6 +36,28 @@ Current hardware baseline:
 - `6.0V` motor rail for `4 x N20 6V` motors;
 - separate `5.0V` logic rail for controller, cameras, and sensors;
 - robot Wi-Fi AP `Robot-Control` with browser control UI.
+
+Reference build components:
+
+| Component | Quantity | Role / current status |
+| --- | ---: | --- |
+| `M5 ATOM` main controller | 1 | Main ESP32 controller for Wi-Fi AP, web UI, motor control, ToF, and robot state |
+| `M5 AtomS3R-CAM` | 2 | Cam 1 front/operator stream and Cam 2 upward/downward diagnostic/color node |
+| `VL53L0X` ToF module | 1 | Front distance sensing over I2C |
+| `TCS34725` / `CJMCU-34725` RGB color sensor | 1 used / 2 ordered | Floor color telemetry on Cam 2 Grove I2C |
+| `TB6612FNG` dual motor driver | 1 | Two-channel drive; left motor pair on channel A and right motor pair on channel B |
+| `N20 6V` DC gearmotor | 4 | Four-wheel drive, two motors wired in parallel per side |
+| Driven wheel pair `42 x 19 mm` | 2 pairs | Four driven wheels total |
+| `2 x 18650` Li-Ion cells | 2 | Main `2S` battery pack |
+| `2x18650` battery holder | 1 | Battery mount for the reference build |
+| `2S 3A` BMS/protection board | 1 | Battery protection, still requires high-load validation |
+| `1-2S` Li-Ion charger module | 1 | Charging path for the 2S pack |
+| USB-C PD trigger module | 1 | Bench/charging input source used in the power setup |
+| DC-DC step-down module `5A` | 2 | One set to `5.0V` logic rail, one set to `6.0V` motor rail |
+| `1000uF / 16V` capacitor | 1 | Motor rail bulk decoupling near the driver |
+| Slide switch | 1 | Master power switch |
+| Custom PCB / interconnect board | 1 design | EasyEDA/Gerber evidence present; latest Gerber package is included |
+| 3D-printed chassis/enclosure | 1 set | CAD and photo evidence present; final heat/impact/service validation still open |
 
 ## Current status
 
